@@ -1,4 +1,5 @@
 //! npm install uuid
+//todo dokončit edit button. Potřebuji vyřešit, aby mi do editBtn tlačítka šlo id daného tásku a já na to následně změnil text
 
 "use client";
 
@@ -13,7 +14,7 @@ export default function TaskPage() {
   ]);
 
   const handleChange = (id) => {
-    setTasks(tasks.map(task => 
+    setTasks(tasks.map(task =>
       task.id === id ? { ...task, status: !task.status } : task
     ));
   };
@@ -22,7 +23,15 @@ export default function TaskPage() {
     setTasks(tasks.filter(task => task.id !== id));
   }
 
+  let taskValue;
+  const handleEdit = (id) => {
+    setTasks(tasks.map((task) => {
+      task.id === id ? { ...task, text: editTask } : task
+    }))
+  }
+
   const [task, setTask] = useState("");
+  const [editTask, setEditTask] = useState(taskValue);
 
   const handleClick = () => {
     if (task.trim() === "") {
@@ -77,7 +86,7 @@ export default function TaskPage() {
       </div>
 
       {/*Seznam úkolů */}
-      <div className="mx-auto flex w-full max-w-xl px-2 mb-12 flex-col gap-3 md:gap-4 pt-8 pb-24">
+      <div className="mx-auto flex w-full max-w-xl lg:max-w-4xl px-2 mb-12 flex-col gap-3 md:gap-4 pt-8 pb-24">
         <h2 className="text-xl font-semibold">Seznam úkolů</h2>
         {tasks.filter(oneTask => !oneTask.status).map((oneTask) => (
           <Task
@@ -86,6 +95,7 @@ export default function TaskPage() {
             change={() => handleChange(oneTask.id)}
             status={oneTask.status}
             deleteTask={() => handleDelete(oneTask.id)}
+            modal="modal-edit"
           />
         ))}
 
@@ -99,8 +109,58 @@ export default function TaskPage() {
               change={() => handleChange(oneTask.id)}
               status={oneTask.status}
               deleteTask={() => handleDelete(oneTask.id)}
+              modal="modal-edit"
             />
           ))}
+      </div>
+
+      {/* <label className="btn btn-outline-warning btn-xs" htmlFor="modal-edit">
+        Edit new
+      </label> */}
+      <input className="modal-state" id="modal-edit" type="checkbox" />
+      <div className="modal">
+        <label className="modal-overlay" htmlFor="modal-edit"></label>
+        <div className="modal-content flex flex-col gap-5">
+          <label
+            htmlFor="modal-edit"
+            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          >
+            ✕
+          </label>
+          <div className="form-group">
+            <div className="form-field">
+              <label className="form-label text-gray-700">Upravte úkol</label>
+
+              <input
+                placeholder="Zadejte úkol"
+                type="text"
+                className="input max-w-full bg-inherit text-black"
+                onChange={(e) => setEditTask(e.target.value)}
+                value={editTask}
+              />
+              <label className="form-label">
+                <span className="form-label-alt">Neplatný formát</span>
+              </label>
+            </div>
+
+            <div className="form-field pt-3">
+              <div className="form-control justify-between">
+                <button
+                  type="button"
+                  onClick={handleEdit}
+                  className="btn btn-primary w-full"
+                >
+                  Upravit
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button className="btn btn-error btn-block">Delete</button>
+
+            <button className="btn btn-block">Cancel</button>
+          </div>
+        </div>
       </div>
     </>
   );

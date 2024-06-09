@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 
-export default function Task({ taskText, change, status, deleteTask }) {
+export default function Task({ taskText, change, status, deleteTask, modal }) {
   const [dateNow, setDateNow] = useState("");
+  const [taskEdit, setTaskEdit] = useState(taskText);
+
 
   useEffect(() => {
     const date = new Date();
@@ -25,39 +27,13 @@ export default function Task({ taskText, change, status, deleteTask }) {
           <span className="text-gray-400 text-sm">{dateNow}</span>
         </div>
         <div className="flex ml-auto gap-2">
-          <button className="btn btn-outline-warning btn-xs">Edit</button>
+          <label htmlFor={modal} className="btn btn-outline-warning btn-xs">Edit</label>
           <button onClick={deleteTask} className="btn btn-outline-error btn-xs">
             Smazat
           </button>
 
-          <label className="btn btn-primary" htmlFor="modal-1">
-            Open Modal
-          </label>
-          <input className="modal-state" id="modal-1" type="checkbox" />
-          <div className="modal">
-            <label className="modal-overlay" htmlFor="modal-1"></label>
-            <div className="modal-content flex flex-col gap-5">
-              <label
-                htmlFor="modal-1"
-                className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-              >
-                ✕
-              </label>
-              <h2 className="text-xl">Modal title 1</h2>
-              <span>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur
-                dolorum voluptate ratione dicta. Maxime cupiditate, est commodi
-                consectetur earum iure, optio, obcaecati in nulla saepe maiores
-                nobis iste quasi alias!
-              </span>
-              <div className="flex gap-3">
-                <button className="btn btn-error btn-block">Delete</button>
 
-                <button className="btn btn-block">Cancel</button>
-              </div>
-            </div>
-          </div>
-          
+
         </div>
       </label>
     </div>
