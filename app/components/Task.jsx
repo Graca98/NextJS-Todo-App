@@ -2,10 +2,16 @@
 
 import { useState, useEffect } from "react";
 
-export default function Task({ taskText, change, status, deleteTask, modal }) {
+export default function Task({
+  taskText,
+  change,
+  status,
+  deleteTask,
+  modal,
+  test,
+}) {
   const [dateNow, setDateNow] = useState("");
   const [taskEdit, setTaskEdit] = useState(taskText);
-
 
   useEffect(() => {
     const date = new Date();
@@ -14,11 +20,11 @@ export default function Task({ taskText, change, status, deleteTask, modal }) {
   }, []);
 
   return (
-    <div>
-      <label className="flex justify-start cursor-pointer items-center gap-2 shadow-md p-2 hover:bg-gray-200 w-full ">
+    <div className="">
+      <label className="flex justify-start cursor-pointer items-center gap-2 shadow-md p-2 hover:bg-gray-100 w-full ">
         <input
           type="checkbox"
-          className="checkbox checkbox-success checkbox-lg bg-inherit hover:bg-inherit w-6 flex-shrink-0"
+          className="checkbox checkbox-success checkbox-lg bg-white hover:bg-white active:bg-white w-6 flex-shrink-0"
           onChange={change}
           checked={status}
         />
@@ -27,13 +33,19 @@ export default function Task({ taskText, change, status, deleteTask, modal }) {
           <span className="text-gray-400 text-sm">{dateNow}</span>
         </div>
         <div className="flex ml-auto gap-2">
-          <label htmlFor={modal} className="btn btn-outline-warning btn-xs">Edit</label>
+          {!status ? (
+            <label
+              htmlFor={modal}
+              onClick={test}
+              className="btn btn-outline-warning btn-xs"
+            >
+              Edit
+            </label>
+          ) : null}
+
           <button onClick={deleteTask} className="btn btn-outline-error btn-xs">
             Smazat
           </button>
-
-
-
         </div>
       </label>
     </div>

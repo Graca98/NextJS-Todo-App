@@ -8,34 +8,71 @@ import { v4 as uuidv4 } from "uuid";
 import Task from "./Task";
 
 export default function TaskPage() {
+  const [tempID, setTempID] = useState("");
   const [tasks, setTasks] = useState([
     { id: uuidv4(), text: "Umýt vanu", status: false },
     { id: uuidv4(), text: "Uvařit večeři", status: false },
   ]);
 
+  const formState = {
+    inputLabel: "",
+    spanLabel: "",
+    formText: ""
+  }
+
   const handleChange = (id) => {
-    setTasks(tasks.map(task =>
-      task.id === id ? { ...task, status: !task.status } : task
-    ));
+    setTasks(
+      tasks.map((task) =>
+        task.id === id ? { ...task, status: !task.status } : task,
+      ),
+    );
   };
 
   const handleDelete = (id) => {
-    setTasks(tasks.filter(task => task.id !== id));
-  }
+    setTasks(tasks.filter((task) => task.id !== id));
+  };
 
-  let taskValue;
+  //Test
+  const handleTest = (id) => {
+    setTempID(id);
+    tasks.map((one) => {
+      if (one.id === id) {
+        console.log("if test je: " + one.text);
+        setEditTask(one.text);
+      }
+    });
+  };
+
+  //Edit button
   const handleEdit = (id) => {
-    setTasks(tasks.map((task) => {
-      task.id === id ? { ...task, text: editTask } : task
-    }))
-  }
+    console.log(id);
+    setTasks(
+      tasks.map((one) => (one.id === id ? { ...one, text: editTask } : one)),
+    );
 
-  const [task, setTask] = useState("");
-  const [editTask, setEditTask] = useState(taskValue);
+    setEditTask("");
+
+    /** Starý zápis
+     * tasks.map((one) => {
+        if (one.id === id) {
+          console.log("Log funguje ");
+          console.log(one);
+          return {...one, text: "test"}
+        }
+        return one
+      }),
+     */
+  };
+
+  const [task, setTask] = useState("Testovací zpráva na začátek");
+  const [editTask, setEditTask] = useState("");
 
   const handleClick = () => {
     if (task.trim() === "") {
-      alert("Task nemůže být prázdný");
+      // dodělat
+      formState.inputLabel = "input-error"
+      formState.inputLabel = "text-error"
+      formState.formText = "Input nemůže být prázdný!"
       return;
     }
 
@@ -62,12 +99,12 @@ export default function TaskPage() {
             <input
               placeholder="Zadejte úkol"
               type="text"
-              className="input max-w-full bg-inherit text-black"
+              className={`input max-w-full bg-inherit text-black ${formState.inputLabel}`}
               onChange={(e) => setTask(e.target.value)}
               value={task}
             />
             <label className="form-label">
-              <span className="form-label-alt">Neplatný formát</span>
+              <span className={`form-label-alt ${formState.spanLabel}`}>{formState.text}</span>
             </label>
           </div>
 
@@ -88,16 +125,19 @@ export default function TaskPage() {
       {/*Seznam úkolů */}
       <div className="mx-auto flex w-full max-w-xl lg:max-w-4xl px-2 mb-12 flex-col gap-3 md:gap-4 pt-8 pb-24">
         <h2 className="text-xl font-semibold">Seznam úkolů</h2>
-        {tasks.filter(oneTask => !oneTask.status).map((oneTask) => (
-          <Task
-            key={oneTask.id}
-            taskText={oneTask.text}
-            change={() => handleChange(oneTask.id)}
-            status={oneTask.status}
-            deleteTask={() => handleDelete(oneTask.id)}
-            modal="modal-edit"
-          />
-        ))}
+        {tasks
+          .filter((oneTask) => !oneTask.status)
+          .map((oneTask) => (
+            <Task
+              key={oneTask.id}
+              taskText={oneTask.text}
+              change={() => handleChange(oneTask.id)}
+              status={oneTask.status}
+              deleteTask={() => handleDelete(oneTask.id)}
+              modal="modal-edit"
+              test={() => handleTest(oneTask.id)}
+            />
+          ))}
 
         <h2 className="text-xl font-semibold mt-12">Splněné úkoly</h2>
         {tasks
@@ -110,6 +150,7 @@ export default function TaskPage() {
               status={oneTask.status}
               deleteTask={() => handleDelete(oneTask.id)}
               modal="modal-edit"
+              test={() => handleTest(oneTask.id)}
             />
           ))}
       </div>
@@ -120,13 +161,7 @@ export default function TaskPage() {
       <input className="modal-state" id="modal-edit" type="checkbox" />
       <div className="modal">
         <label className="modal-overlay" htmlFor="modal-edit"></label>
-        <div className="modal-content flex flex-col gap-5">
-          <label
-            htmlFor="modal-edit"
-            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-          >
-            ✕
-          </label>
+        <div className="modal-content flex flex-col gap-5 bg-white">
           <div className="form-group">
             <div className="form-field">
               <label className="form-label text-gray-700">Upravte úkol</label>
@@ -136,29 +171,28 @@ export default function TaskPage() {
                 type="text"
                 className="input max-w-full bg-inherit text-black"
                 onChange={(e) => setEditTask(e.target.value)}
-                value={editTask}
+                placeholder={editTask}
               />
               <label className="form-label">
                 <span className="form-label-alt">Neplatný formát</span>
               </label>
             </div>
-
-            <div className="form-field pt-3">
-              <div className="form-control justify-between">
-                <button
-                  type="button"
-                  onClick={handleEdit}
-                  className="btn btn-primary w-full"
-                >
-                  Upravit
-                </button>
-              </div>
-            </div>
           </div>
           <div className="flex gap-3">
-            <button className="btn btn-error btn-block">Delete</button>
+            <label
+              onClick={() => handleEdit(tempID)}
+              className="btn btn-success btn-block"
+              htmlFor="modal-edit"
+            >
+              Uložit
+            </label>
 
-            <button className="btn btn-block">Cancel</button>
+            <label
+              htmlFor="modal-edit"
+              className="btn btn-block bg-gray-200 text-black"
+            >
+              Zrušit
+            </label>
           </div>
         </div>
       </div>
