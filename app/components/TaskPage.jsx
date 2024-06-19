@@ -10,15 +10,40 @@ import Task from "./Task";
 export default function TaskPage() {
   const [tempID, setTempID] = useState("");
   const [tasks, setTasks] = useState([
-    { id: uuidv4(), text: "Umýt vanu", status: false },
-    { id: uuidv4(), text: "Uvařit večeři", status: false },
+    { id: uuidv4(), text: "Vymyslet formát datumu a času", status: false },
+    {
+      id: uuidv4(),
+      text: "Přidat ukládání/edit/mazání do local storage",
+      status: false,
+    },
+    { id: uuidv4(), text: "Přidat filtry", status: false },
+    {
+      id: uuidv4(),
+      text: "Přidat ukazatel kolik ještě zbýva splnit",
+      status: false,
+    },
+    {
+      id: uuidv4(),
+      text: "Odstranit černý checkbox při hoveru (theme problém)",
+      status: false,
+    },
+    {
+      id: uuidv4(),
+      text: "Přidání úkolu bude schované pdo tlačítkem 'nový ukol'",
+      status: false,
+    },
+    {
+      id: uuidv4(),
+      text: "Další verze jako film picker",
+      status: false,
+    },
   ]);
 
   const formState = {
     inputLabel: "",
     spanLabel: "",
-    formText: ""
-  }
+    formText: "",
+  };
 
   const handleChange = (id) => {
     setTasks(
@@ -32,25 +57,25 @@ export default function TaskPage() {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
-  //Test
-  const handleTest = (id) => {
+  // Po kliknutí na edit button se načte value daného úkolu
+  const handleEditBtn = (id) => {
     setTempID(id);
     tasks.map((one) => {
       if (one.id === id) {
         console.log("if test je: " + one.text);
-        setEditTask(one.text);
+        setEditValue(one.text);
       }
     });
   };
 
-  //Edit button
-  const handleEdit = (id) => {
+  // Save button v edit modalu
+  const handleSave = (id) => {
     console.log(id);
     setTasks(
-      tasks.map((one) => (one.id === id ? { ...one, text: editTask } : one)),
+      tasks.map((one) => (one.id === id ? { ...one, text: editValue } : one)),
     );
 
-    setEditTask("");
+    setEditValue("");
 
     /** Starý zápis
      * tasks.map((one) => {
@@ -65,14 +90,14 @@ export default function TaskPage() {
   };
 
   const [task, setTask] = useState("Testovací zpráva na začátek");
-  const [editTask, setEditTask] = useState("");
+  const [editValue, setEditValue] = useState("");
 
   const handleClick = () => {
     if (task.trim() === "") {
       // dodělat
-      formState.inputLabel = "input-error"
-      formState.inputLabel = "text-error"
-      formState.formText = "Input nemůže být prázdný!"
+      formState.inputLabel = "input-error";
+      formState.inputLabel = "text-error";
+      formState.formText = "Input nemůže být prázdný!";
       return;
     }
 
@@ -104,7 +129,9 @@ export default function TaskPage() {
               value={task}
             />
             <label className="form-label">
-              <span className={`form-label-alt ${formState.spanLabel}`}>{formState.text}</span>
+              <span className={`form-label-alt ${formState.spanLabel}`}>
+                {formState.text}
+              </span>
             </label>
           </div>
 
@@ -135,11 +162,11 @@ export default function TaskPage() {
               status={oneTask.status}
               deleteTask={() => handleDelete(oneTask.id)}
               modal="modal-edit"
-              test={() => handleTest(oneTask.id)}
+              editTask={() => handleEditBtn(oneTask.id)}
             />
           ))}
 
-        <h2 className="text-xl font-semibold mt-12">Splněné úkoly</h2>
+        <h2 className="text-xl font-semibold mt-12">Dokončeno</h2>
         {tasks
           .filter((oneTask) => oneTask.status)
           .map((oneTask) => (
@@ -150,7 +177,7 @@ export default function TaskPage() {
               status={oneTask.status}
               deleteTask={() => handleDelete(oneTask.id)}
               modal="modal-edit"
-              test={() => handleTest(oneTask.id)}
+              editTask={() => handleEditBtn(oneTask.id)}
             />
           ))}
       </div>
@@ -170,8 +197,8 @@ export default function TaskPage() {
                 placeholder="Zadejte úkol"
                 type="text"
                 className="input max-w-full bg-inherit text-black"
-                onChange={(e) => setEditTask(e.target.value)}
-                placeholder={editTask}
+                onChange={(e) => setEditValue(e.target.value)}
+                value={editValue}
               />
               <label className="form-label">
                 <span className="form-label-alt">Neplatný formát</span>
@@ -180,7 +207,7 @@ export default function TaskPage() {
           </div>
           <div className="flex gap-3">
             <label
-              onClick={() => handleEdit(tempID)}
+              onClick={() => handleSave(tempID)}
               className="btn btn-success btn-block"
               htmlFor="modal-edit"
             >
