@@ -74,7 +74,7 @@ export default function Task({
           checked={status}
         />
         <div className="flex flex-col lg:flex-row lg:items-center ml-1 flex-grow lg:gap-6 lg:justify-start">
-          <span className={`{status ? "line-through" : ""} lg:basis-2/3`}>
+          <span className={`${status ? "line-through" : ""} lg:basis-2/3`}>
             {taskText}
           </span>
           <span className="text-gray-400 text-xs lg:text-sm lg:basis-1/3">
@@ -82,15 +82,13 @@ export default function Task({
           </span>
         </div>
         <div className="flex ml-auto gap-2">
-          {!status ? (
-            <label
-              htmlFor={modal}
-              onClick={editTask}
-              className="btn btn-circle bg-gray-200 hover:bg-gray-300 hover:rotate-12 active:bg-gray-400 p-1"
-            >
-              {editIcon}
-            </label>
-          ) : null}
+          <label
+            htmlFor={modal}
+            onClick={editTask}
+            className={`${!status ? "" : "invisible"} btn btn-circle bg-gray-200 hover:bg-gray-300 hover:rotate-12 active:bg-gray-400 p-1`}
+          >
+            {editIcon}
+          </label>
 
           {/** 
           *{!status ? (
