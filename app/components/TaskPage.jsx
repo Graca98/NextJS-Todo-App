@@ -98,7 +98,7 @@ export default function TaskPage() {
     setEditValue("");
   };
 
-  const [task, setTask] = useState("Testovací zpráva na začátek");
+  const [task, setTask] = useState("");
   const [editValue, setEditValue] = useState("");
 
   // Vytvoří nový task
@@ -123,10 +123,11 @@ export default function TaskPage() {
 
     setTasks([...tasks, newTask]);
     localStorage.setItem("tasks", JSON.stringify([...tasks, newTask]));
+    setTask('')
   };
 
   return (
-    <>
+    <div className="background">
       <div className="mx-auto flex w-full max-w-sm flex-col gap-6 py-4 md:py-8 px-1">
         <div className="flex flex-col items-center">
           <h1 className="text-3xl font-semibold">Todo App</h1>
@@ -135,7 +136,7 @@ export default function TaskPage() {
       </div>
 
       {/*Seznam úkolů */}
-      <div className="mx-auto flex w-full max-w-xl lg:max-w-4xl px-2 mb-12 flex-col gap-3 md:gap-4 pt-8 pb-24">
+      <div className="mx-auto flex w-full max-w-xl lg:max-w-4xl px-2 mb-12 flex-col gap-3 md:gap-4 pt-2 pb-24">
         <label
           className="btn btn-primary w-6/12 mx-auto md:mx-0 md:w-32 mb-4 md:mb-2"
           htmlFor="modal-newTask"
@@ -179,6 +180,22 @@ export default function TaskPage() {
               editTask={() => handleEditBtn(oneTask.id)}
             />
           ))}
+        <h2 className="text-xl font-semibold mt-12">Co vše aplikace umí</h2>
+        <ul className="list-disc list-inside">
+          <li>Přidání úkolu přes tlačítko (modol)</li>
+          <li>
+            Možnost editace úkolu, modal načte předchozí zprávu, kterou lze
+            editovat. Když se klikni na input, tak se vybere celý text pro
+            rychlejší smazání a přepsání
+          </li>
+          <li>Možnost smazat úkol</li>
+          <li>Nadpisy se schování pokud nejsou žádné úkoly</li>
+          <li>Ukládání úkolů do localStorage</li>
+          <li>
+            Úkoly se atomaticky přemístí pokud jsou splněné (checkbox = true) +
+            se aplikuje CSS efekt
+          </li>
+        </ul>
       </div>
 
       {/* Modal na edit tasků */}
@@ -191,12 +208,12 @@ export default function TaskPage() {
         <div className="modal-content flex flex-col w-screen md:w-6/12 max-w-screen-sm gap-5 bg-white">
           <div className="form-group">
             <div className="form-field">
-              <label className="form-label text-gray-700">Upravte úkol</label>
+              <label className="form-label text-lg text-gray-700">Upravte úkol</label>
 
               <input
                 placeholder="Upravte úkol"
                 type="text"
-                className="input max-w-full bg-inherit text-black"
+                className="input max-w-full bg-white text-black"
                 onChange={(e) => setEditValue(e.target.value)}
                 onFocus={handleFocus}
                 value={editValue}
@@ -233,12 +250,12 @@ export default function TaskPage() {
         <div className="modal-content flex flex-col w-screen md:w-9/12 max-w-screen-sm gap-5 bg-white">
           <div className="form-group">
             <div className="form-field">
-              <label className="form-label text-gray-700">Zadejte úkol</label>
+              <label className="form-label text-lg text-gray-700">Zadejte úkol</label>
 
               <input
-                placeholder="Zadejte úkol"
+                placeholder="Vynést odpadky"
                 type="text"
-                className={`input max-w-full bg-inherit text-black ${formState.inputLabel}`}
+                className={`input max-w-full bg-white text-black ${formState.inputLabel}`}
                 onChange={(e) => setTask(e.target.value)}
                 value={task}
               />
@@ -270,6 +287,6 @@ export default function TaskPage() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

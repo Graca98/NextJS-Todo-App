@@ -4,7 +4,7 @@
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
+  --background-start-rgb: 255, 255, 255;
   --background-end-rgb: 255, 255, 255;
 }
 
@@ -16,6 +16,11 @@
   }
 }
 
+html {
+  color-scheme: light;
+}
+
+
 body {
   color: black;
   background: linear-gradient(
@@ -25,4 +30,15 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+.background {
+  background: rgb(172,244,247);
+  background: -moz-linear-gradient(90deg, rgba(172,244,247,0.6021044075144508) 0%, rgba(45,197,255,0.30152637283236994) 51%, rgba(89,172,247,0.39979226878612717) 100%);
+  background: -webkit-linear-gradient(90deg, rgba(172,244,247,0.6021044075144508) 0%, rgba(45,197,255,0.30152637283236994) 51%, rgba(89,172,247,0.39979226878612717) 100%);
+  background: linear-gradient(90deg, rgba(172,244,247,0.6021044075144508) 0%, rgba(45,197,255,0.30152637283236994) 51%, rgba(89,172,247,0.39979226878612717) 100%);
+  height: 100%; /* Nastaví výšku elementu na 100% viewportu */
+  width: 100%; /* Nastaví šířku elementu na 100% */
+}
+
+
 
