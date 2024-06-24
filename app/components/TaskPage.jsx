@@ -126,6 +126,14 @@ export default function TaskPage() {
     setTask('')
   };
 
+  function handleKeyDown(event) {
+    if (event.key === 'Enter') {
+      handleClick()
+    }
+  }
+
+
+
   return (
     <div className="background">
       <div className="mx-auto flex w-full max-w-sm flex-col gap-6 py-4 md:py-8 px-1">
@@ -180,6 +188,9 @@ export default function TaskPage() {
               editTask={() => handleEditBtn(oneTask.id)}
             />
           ))}
+
+        {/**
+         
         <h2 className="text-xl font-semibold mt-12">Co vše aplikace umí</h2>
         <ul className="list-disc list-inside">
           <li>Přidání úkolu přes tlačítko (modol)</li>
@@ -196,7 +207,9 @@ export default function TaskPage() {
             se aplikuje CSS efekt
           </li>
         </ul>
+        */}
       </div>
+
 
       {/* Modal na edit tasků */}
       {/* <label className="btn btn-outline-warning btn-xs" htmlFor="modal-edit">
@@ -256,6 +269,7 @@ export default function TaskPage() {
                 placeholder="Vynést odpadky"
                 type="text"
                 className={`input max-w-full bg-white text-black ${formState.inputLabel}`}
+                onKeyDown={handleKeyDown}
                 onChange={(e) => setTask(e.target.value)}
                 value={task}
               />
