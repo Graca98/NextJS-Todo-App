@@ -66,7 +66,7 @@ export default function Task({
 
   return (
     <div className="">
-      <label className={`flex justify-start cursor-pointer items-center gap-2 shadow-md p-2 bg-white hover:bg-gray-100 w-full ${status ? 'opacity-50' : ""}`}>
+      <label className={`flex justify-start cursor-pointer items-center gap-2 shadow-md p-2 bg-white hover:bg-gray-200 w-full ${status ? 'opacity-50' : ""}`}>
         <input
           type="checkbox"
           className="checkbox checkbox-success checkbox-lg bg-white hover:bg-white active:bg-white w-6 flex-shrink-0"
@@ -85,7 +85,7 @@ export default function Task({
           <label
             htmlFor={modal}
             onClick={editTask}
-            className={`${!status ? "" : "invisible"} btn btn-circle bg-inherit hover:bg-gray-200 hover:rotate-12 active:bg-gray-300 p-1`}
+            className={`${!status ? "" : "invisible"} btn btn-circle bg-inherit hover:bg-gray-300 hover:rotate-12 active:bg-gray-400 p-1`}
           >
             {editIcon}
           </label>
@@ -104,7 +104,7 @@ export default function Task({
 
           <button
             onClick={deleteTask}
-            className="btn btn-circle bg-inherit hover:bg-gray-200 hover:rotate-12 active:bg-gray-300 p-1"
+            className="btn btn-circle bg-inherit hover:bg-gray-300 hover:rotate-12 active:bg-gray-400 p-1"
           >
             {deleteIcon}
           </button>
