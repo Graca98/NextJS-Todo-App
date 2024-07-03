@@ -83,7 +83,7 @@ export default function TaskPage() {
       setFormState({
         inputLabel: "input-error",
         spanLabel: "text-error",
-        formText: "Input nemůže být prázdný!",
+        formText: "Input nemůže být prázdný",
       });
       return;
     }
