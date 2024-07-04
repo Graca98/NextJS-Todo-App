@@ -81,7 +81,7 @@ export default function Task({
             {dateNow}
           </span>
         </div>
-        <div className="flex ml-auto gap-2">
+        <div className="flex ml-auto">
           <label
             htmlFor={modal}
             onClick={editTask}
@@ -89,18 +89,6 @@ export default function Task({
           >
             {editIcon}
           </label>
-
-          {/** 
-          *{!status ? (
-            <label
-              htmlFor={modal}
-              onClick={editTask}
-              className="btn btn-outline-warning btn-xs"
-            >
-              Edit
-            </label>
-          ) : null}
-          */}
 
           <button
             onClick={deleteTask}
