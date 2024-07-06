@@ -1,71 +1,25 @@
 "use client";
 
-//todo Změnit icony na react ikony
 //todo Uklid kódu
 
-import { useState, useEffect } from "react";
+import { FaClock } from "react-icons/fa6";
+import { HiPencil } from "react-icons/hi2";
+import { BsTrash } from "react-icons/bs";
 
 export default function Task({
   taskText,
-  change,
   status,
+  taskTime,
+  change,
   deleteTask,
-  modal,
   editTask,
+  setOpenEditModal
 }) {
-  const editIcon = (
-    <svg viewBox="0 0 24 24" fill="gray" height="1.5em" width="1.5em">
-      <path d="M8.707 19.707L18 10.414 13.586 6l-9.293 9.293a1.003 1.003 0 00-.263.464L3 21l5.242-1.03c.176-.044.337-.135.465-.263zM21 7.414a2 2 0 000-2.828L19.414 3a2 2 0 00-2.828 0L15 4.586 19.414 9 21 7.414z" />
-    </svg>
-  );
-  const deleteIcon = (
-    <svg fill="gray" viewBox="0 0 16 16" height="1.5em" width="1.5em">
-      <path d="M5.5 5.5A.5.5 0 016 6v6a.5.5 0 01-1 0V6a.5.5 0 01.5-.5zm2.5 0a.5.5 0 01.5.5v6a.5.5 0 01-1 0V6a.5.5 0 01.5-.5zm3 .5a.5.5 0 00-1 0v6a.5.5 0 001 0V6z" />
-      <path
-        fillRule="evenodd"
-        d="M14.5 3a1 1 0 01-1 1H13v9a2 2 0 01-2 2H5a2 2 0 01-2-2V4h-.5a1 1 0 01-1-1V2a1 1 0 011-1H6a1 1 0 011-1h2a1 1 0 011 1h3.5a1 1 0 011 1v1zM4.118 4L4 4.059V13a1 1 0 001 1h6a1 1 0 001-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"
-      />
-    </svg>
-  );
-  const [dateNow, setDateNow] = useState("");
 
-  useEffect(() => {
-    let date = new Date();
-
-    // Dnešní datum
-    let day = date.getDate();
-    let month = date.getMonth() + 1;
-    let czMonths = [
-      "ledna",
-      "února",
-      "března",
-      "dubna",
-      "května",
-      "června",
-      "července",
-      "srpna",
-      "září",
-      "října",
-      "listopadu",
-      "prosince",
-    ];
-    let year = date.getFullYear();
-
-    let formattedDate = `${day}. ${czMonths[month]} ${year}`;
-
-    // Aktuální čas
-    let hours = date.getHours();
-    let minutes = date.getMinutes();
-
-    // Formátování hodin a minut s předponou 0, pokud je hodnota menší než 10
-    let formattedHours = hours < 10 ? "0" + hours : hours;
-    let formattedMinutes = minutes < 10 ? "0" + minutes : minutes;
-
-    // Formátování času
-    let formattedTime = `${formattedHours}:${formattedMinutes}`;
-    const currentTime = `${formattedDate} v ${formattedTime}`;
-    setDateNow(currentTime);
-  }, []);
+  const handleEdit = () => {
+    setOpenEditModal(true)
+    editTask()
+  }
 
   return (
     <div className="">
@@ -80,24 +34,24 @@ export default function Task({
           <span className={`${status ? "line-through" : ""} lg:basis-2/3`}>
             {taskText}
           </span>
-          <span className="text-gray-400 text-xs lg:text-sm lg:basis-1/3">
-            {dateNow}
+          <span className="flex items-center gap-x-1.5 text-gray-400 text-xs lg:text-sm lg:basis-1/3">
+            <FaClock />
+            {taskTime}
           </span>
         </div>
         <div className="flex ml-auto">
           <label
-            htmlFor={modal}
-            onClick={editTask}
-            className={`${!status ? "" : "invisible"} btn btn-circle bg-inherit hover:bg-gray-300 hover:rotate-12 active:bg-gray-400 p-1`}
+            onClick={handleEdit}
+            className={`${!status ? "" : "invisible"} btn btn-circle md:w-[2rem] md:h-[2rem] bg-inherit hover:bg-gray-300 hover:rotate-12 active:bg-gray-400 p-0`}
           >
-            {editIcon}
+            <HiPencil className="text-gray-500 text-lg" />
           </label>
 
           <button
             onClick={deleteTask}
-            className="btn btn-circle bg-inherit hover:bg-gray-300 hover:rotate-12 active:bg-gray-400 p-1"
+            className="btn btn-circle md:w-[2rem] md:h-[2rem] bg-inherit hover:bg-gray-300 hover:rotate-12 active:bg-gray-400 p-0"
           >
-            {deleteIcon}
+            <BsTrash className="text-gray-500 text-lg" />
           </button>
         </div>
       </label>

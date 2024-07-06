@@ -40,9 +40,9 @@ const TaskEditForm = ({ tempID, openEditModal, setOpenEditModal, editValue, setE
               onFocus={handleFocus}
               value={editValue}
             />
-            <label className="form-label">
+            {/* <label className="form-label">
               <span className="form-label-alt">Neplatný formát</span>
-            </label>
+            </label> */}
           </div>
 
           <div className="flex gap-3 w-full mx-auto justify-center">

@@ -15,6 +15,7 @@ export default function TaskPage() {
   const [tempID, setTempID] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [task, setTask] = useState("");
+  const [currentTime, setCurrentTime] = useState(null);
   const [openTaskModal, setOpenTaskModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [editValue, setEditValue] = useState("");
@@ -75,13 +76,14 @@ export default function TaskPage() {
       return;
     }
 
-    console.log("form state je: " + formState.formText);
-
     const newTask = {
       id: uuidv4(),
       text: task,
       status: false,
+      time: currentTime,
     };
+
+    console.log(`Task byl přidán: ${currentTime}`);
 
     setTasks([...tasks, newTask]);
     setTask("");
@@ -116,6 +118,44 @@ export default function TaskPage() {
     setEditValue("");
     setOpenEditModal(false);
   };
+
+  useEffect(() => {
+    let date = new Date();
+
+    // Dnešní datum
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let czMonths = [
+      "ledna",
+      "února",
+      "března",
+      "dubna",
+      "května",
+      "června",
+      "července",
+      "srpna",
+      "září",
+      "října",
+      "listopadu",
+      "prosince",
+    ];
+    let year = date.getFullYear();
+
+    let formattedDate = `${day}. ${czMonths[month]} ${year}`;
+
+    // Aktuální čas
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+
+    // Formátování hodin a minut s předponou 0, pokud je hodnota menší než 10
+    let formattedHours = hours < 10 ? "0" + hours : hours;
+    let formattedMinutes = minutes < 10 ? "0" + minutes : minutes;
+
+    // Formátování času
+    let formattedTime = `${formattedHours}:${formattedMinutes}`;
+    const resultTime = `${formattedDate} v ${formattedTime}`;
+    setCurrentTime(resultTime);
+  }, [handleSubmit]);
 
   return (
     <div className="background flex flex-col">
@@ -169,6 +209,7 @@ export default function TaskPage() {
               handleChange={handleChange}
               handleDelete={handleDelete}
               handleEditBtn={handleEditBtn}
+              setOpenEditModal={setOpenEditModal}
             />
           </div>
         </div>

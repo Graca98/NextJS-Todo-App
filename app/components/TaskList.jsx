@@ -1,6 +1,6 @@
 import Task from "./Task";
 
-const TaskList = ({ tasks, handleChange, handleDelete, handleEditBtn }) => {
+const TaskList = ({ tasks, handleChange, handleDelete, handleEditBtn, setOpenEditModal }) => {
 
 
   return (<>
@@ -17,11 +17,12 @@ const TaskList = ({ tasks, handleChange, handleDelete, handleEditBtn }) => {
           <Task
             key={oneTask.id}
             taskText={oneTask.text}
-            change={() => handleChange(oneTask.id)}
             status={oneTask.status}
+            taskTime={oneTask.time}
+            change={() => handleChange(oneTask.id)}
             deleteTask={() => handleDelete(oneTask.id)}
-            modal="modal-edit"
             editTask={() => handleEditBtn(oneTask.id)}
+            setOpenEditModal={setOpenEditModal}
           />
         ))
     }
@@ -38,11 +39,12 @@ const TaskList = ({ tasks, handleChange, handleDelete, handleEditBtn }) => {
           <Task
             key={oneTask.id}
             taskText={oneTask.text}
-            change={() => handleChange(oneTask.id)}
             status={oneTask.status}
+            taskTime={oneTask.time}
+            change={() => handleChange(oneTask.id)}
             deleteTask={() => handleDelete(oneTask.id)}
-            modal="modal-edit"
             editTask={() => handleEditBtn(oneTask.id)}
+            setOpenEditModal={setOpenEditModal}
           />
         ))
     }
