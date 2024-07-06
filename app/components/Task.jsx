@@ -1,5 +1,8 @@
 "use client";
 
+//todo Změnit icony na react ikony
+//todo Uklid kódu
+
 import { useState, useEffect } from "react";
 
 export default function Task({
