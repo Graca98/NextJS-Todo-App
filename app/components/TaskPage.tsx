@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
-import Task from "./Task";
 import TaskList from "./TaskList";
+import TaskForm from "./TaskForm";
+import TaskEditForm from "./TaskEditForm";
 // Icons
 import { IoMdAddCircle } from "react-icons/io";
 import { FaArrowLeft } from "react-icons/fa";
@@ -75,7 +76,7 @@ export default function TaskPage() {
   const handleFocus = (event) => event.target.select();
 
   // Save button v edit modalu
-  const handleSave = (id: number) => {
+  const handleEdit = (id: number) => {
     const editedTasks = tasks.map((one) =>
       one.id === id ? { ...one, text: editValue } : one
     );
@@ -85,7 +86,7 @@ export default function TaskPage() {
   };
 
   // Vytvoří nový task
-  const handleClick = () => {
+  const handleSubmit = () => {
     if (task.trim() === "") {
       setFormState({
         inputLabel: "input-error",
@@ -115,7 +116,7 @@ export default function TaskPage() {
   // Zpracuje klávesu Enter při přidávání nového tasku
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
-      handleClick();
+      handleSubmit();
     }
   };
 
@@ -154,15 +155,6 @@ export default function TaskPage() {
               Přidan nový
             </h2>
           </label>
-          {/* <label
-            className="btn btn-primary w-fit px-3 gap-1 mb-4 md:mb-2"
-            htmlFor="modal-newTask"
-          >
-            <IoMdAddCircle className="text-2xl" />
-            <span className={`${!openSide && "scale-0 hidden"} duration-300`}>
-              Přidat nový
-            </span>
-          </label> */}
         </div>
 
         <div className="flex flex-col w-full">
@@ -193,93 +185,23 @@ export default function TaskPage() {
       </div>
 
       {/* ================================================================================================ */}
+      {/* Modal na přidání tasku */}
+      <TaskForm
+        formState={formState}
+        handleKeyDown={handleKeyDown}
+        task={task}
+        setTask={setTask}
+        handleSubmit={handleSubmit}
+      />
 
       {/* Modal na edit tasků */}
-      <input className="modal-state" id="modal-edit" type="checkbox" />
-      <div className="modal px-0">
-        <label className="modal-overlay" htmlFor="modal-edit"></label>
-        <div className="modal-content flex flex-col w-screen md:w-6/12 max-w-screen-sm gap-5 bg-white">
-          <div className="form-group">
-            <div className="form-field">
-              <label className="form-label text-lg text-gray-700">
-                Upravte úkol
-              </label>
-              <input
-                placeholder="Upravte úkol"
-                type="text"
-                className="input max-w-full bg-white text-black"
-                onChange={(e) => setEditValue(e.target.value)}
-                onFocus={handleFocus}
-                value={editValue}
-              />
-              <label className="form-label">
-                <span className="form-label-alt">Neplatný formát</span>
-              </label>
-            </div>
-          </div>
-          <div className="flex gap-3 w-full mx-auto justify-center">
-            <label
-              onClick={() => handleSave(tempID)}
-              className="btn btn-success btn-block w-32"
-              htmlFor="modal-edit"
-            >
-              Uložit
-            </label>
-            <label
-              htmlFor="modal-edit"
-              className="btn btn-block bg-gray-200 text-black w-32"
-            >
-              Zrušit
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {/* Modal na přidání tasku */}
-      <input className="modal-state" id="modal-newTask" type="checkbox" />
-      <div className="modal px-0">
-        <label className="modal-overlay" htmlFor="modal-newTask"></label>
-        <div className="modal-content flex flex-col w-screen md:w-9/12 max-w-screen-sm gap-5 bg-white mb-40 md:mb-96">
-          <div className="form-group">
-            <div className="form-field">
-              <label className="form-label text-lg text-gray-700">
-                Zadejte úkol
-              </label>
-              <input
-                placeholder="Vynést odpadky"
-                type="text"
-                className={`input max-w-full bg-white text-black ${formState.inputLabel}`}
-                onKeyDown={handleKeyDown}
-                onChange={(e) => setTask(e.target.value)}
-                value={task}
-              />
-              <label className="form-label">
-                <span className={`form-label-alt ${formState.spanLabel}`}>
-                  {formState.formText}
-                </span>
-              </label>
-            </div>
-            <div className="form-field pt-3">
-              <div className="form-control mx-auto">
-                <label
-                  // type="button"
-                  onClick={handleClick}
-                  className="btn btn-primary w-32 "
-                  htmlFor="modal-newTask"
-                >
-                  Vložit
-                </label>
-                <label
-                  htmlFor="modal-newTask"
-                  className="btn btn-block bg-gray-200 text-black w-32"
-                >
-                  Zrušit
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <TaskEditForm
+        tempID={tempID}
+        editValue={editValue}
+        setEditValue={setEditValue}
+        handleFocus={handleFocus}
+        handleEdit={handleEdit}
+      />
     </div>
   );
 }
