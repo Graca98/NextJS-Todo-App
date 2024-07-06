@@ -1,5 +1,7 @@
 "use client";
 
+//todo Další úklid kódu
+
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import TaskList from "./TaskList";
@@ -12,14 +14,15 @@ import { FaArrowLeft } from "react-icons/fa";
 export default function TaskPage() {
   const [tempID, setTempID] = useState(null);
   const [tasks, setTasks] = useState([]);
+  const [task, setTask] = useState("");
+  const [openTaskModal, setOpenTaskModal] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [editValue, setEditValue] = useState("");
   const [formState, setFormState] = useState({
     inputLabel: "",
     spanLabel: "",
     formText: "",
   });
-  const [task, setTask] = useState("Tohle je testovací úkol :)");
-  const [editValue, setEditValue] = useState("");
-
   // Sidebar useState
   const [openSide, setOpenSide] = useState(false);
 
@@ -61,30 +64,6 @@ export default function TaskPage() {
     setTasks(newTasks);
   };
 
-  // Po kliknutí na edit button se načte value daného úkolu
-  const handleEditBtn = (id: number) => {
-    setTempID(id);
-    tasks.map((one) => {
-      if (one.id === id) {
-        console.log("if test je: " + one.text);
-        setEditValue(one.text);
-      }
-    });
-  };
-
-  // Vybere veškerý text při kliku na edit input
-  const handleFocus = (event) => event.target.select();
-
-  // Save button v edit modalu
-  const handleEdit = (id: number) => {
-    const editedTasks = tasks.map((one) =>
-      one.id === id ? { ...one, text: editValue } : one
-    );
-
-    setTasks(editedTasks);
-    setEditValue("");
-  };
-
   // Vytvoří nový task
   const handleSubmit = () => {
     if (task.trim() === "") {
@@ -105,19 +84,37 @@ export default function TaskPage() {
     };
 
     setTasks([...tasks, newTask]);
-    setTask("Tohle je taky testovací úkol :))");
+    setTask("");
     setFormState({
       inputLabel: "",
       spanLabel: "",
       formText: "",
     });
+    setOpenTaskModal(false);
   };
 
-  // Zpracuje klávesu Enter při přidávání nového tasku
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter") {
-      handleSubmit();
-    }
+  // Po kliknutí na edit button se načte value daného úkolu
+  const handleEditBtn = (id: number) => {
+    setTempID(id);
+    tasks.map((one) => {
+      if (one.id === id) {
+        setEditValue(one.text);
+      }
+    });
+  };
+
+  // Vybere veškerý text při kliku na edit input
+  const handleFocus = (event) => event.target.select();
+
+  // Save button v edit modalu
+  const handleEdit = (id: number) => {
+    const editedTasks = tasks.map((one) =>
+      one.id === id ? { ...one, text: editValue } : one
+    );
+
+    setTasks(editedTasks);
+    setEditValue("");
+    setOpenEditModal(false);
   };
 
   return (
@@ -144,7 +141,8 @@ export default function TaskPage() {
           </h2>
           <label
             className="inline-flex items-center cursor-pointer w-fit"
-            htmlFor="modal-newTask"
+            onClick={() => setOpenTaskModal(true)}
+            // htmlFor="modal-newTask"
           >
             <IoMdAddCircle className="text-4xl w-10 h-10 shrink-0 rounded block float-left mr-2" />
             <h2
@@ -165,7 +163,7 @@ export default function TaskPage() {
           </div>
 
           {/* Seznam úkolů */}
-          <div className="flex flex-col px-2 gap-3 md:gap-4 pt-2 w-full">
+          <div className="flex flex-col px-2 gap-3 md:gap-4 pt-2 w-full mb-12">
             <TaskList
               tasks={tasks}
               handleChange={handleChange}
@@ -187,8 +185,10 @@ export default function TaskPage() {
       {/* ================================================================================================ */}
       {/* Modal na přidání tasku */}
       <TaskForm
+        openTaskModal={openTaskModal}
+        setOpenTaskModal={setOpenTaskModal}
         formState={formState}
-        handleKeyDown={handleKeyDown}
+        setFormState={setFormState}
         task={task}
         setTask={setTask}
         handleSubmit={handleSubmit}
@@ -197,6 +197,8 @@ export default function TaskPage() {
       {/* Modal na edit tasků */}
       <TaskEditForm
         tempID={tempID}
+        openEditModal={openEditModal}
+        setOpenEditModal={setOpenEditModal}
         editValue={editValue}
         setEditValue={setEditValue}
         handleFocus={handleFocus}

@@ -1,8 +1,28 @@
+//todo Přidat lepší validaci formuláře
 
+const TaskForm = ({ openTaskModal, setOpenTaskModal, formState, setFormState, task, setTask, handleSubmit }) => {
 
-const TaskForm = ({ formState, handleKeyDown, task, setTask, handleSubmit }) => {
+  const handleCancelBtn = () => {
+    setTask("")
+    setOpenTaskModal(false)
+    setFormState({
+      inputLabel: "",
+      spanLabel: "",
+      formText: "",
+    })
+  }
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSubmit();
+    }
+    if (e.key === 'Escape') {
+      handleCancelBtn();
+    }
+  };
+
   return (<>
-    <input className="modal-state" id="modal-newTask" type="checkbox" />
+    <input className="modal-state" id="modal-newTask" type="checkbox" onChange={() => setOpenTaskModal(!openTaskModal)} checked={openTaskModal} />
     <div className="modal px-0">
       <label className="modal-overlay" htmlFor="modal-newTask"></label>
       <div className="modal-content flex flex-col w-screen md:w-9/12 max-w-screen-sm gap-5 bg-white mb-40 md:mb-96">
@@ -27,20 +47,20 @@ const TaskForm = ({ formState, handleKeyDown, task, setTask, handleSubmit }) => 
           </div>
           <div className="form-field pt-3">
             <div className="form-control mx-auto">
-              <label
+              <button
                 // type="button"
                 onClick={handleSubmit}
                 className="btn btn-primary w-32 "
-                htmlFor="modal-newTask"
               >
                 Vložit
-              </label>
-              <label
-                htmlFor="modal-newTask"
+              </button>
+              <button
+                // htmlFor="modal-newTask"
                 className="btn bg-gray-200 text-black w-32"
+                onClick={handleCancelBtn}
               >
                 Zrušit
-              </label>
+              </button>
             </div>
           </div>
         </div>
