@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import Task from "./Task";
+import TaskList from "./TaskList";
 // Icons
 import { IoMdAddCircle } from "react-icons/io";
 import { FaArrowLeft } from "react-icons/fa";
@@ -135,7 +136,11 @@ export default function TaskPage() {
               className={`text-xl duration-500  ${!openSide && "rotate-180"} `}
             />
           </button>
-          <h2 className="text-xl font-semibold mb-4">Sidebar</h2>
+          <h2
+            className={`text-xl font-semibold mb-4 ${!openSide && "invisible"}`}
+          >
+            Sidebar
+          </h2>
           <label
             className="inline-flex items-center cursor-pointer w-fit"
             htmlFor="modal-newTask"
@@ -169,43 +174,12 @@ export default function TaskPage() {
 
           {/* Seznam úkolů */}
           <div className="flex flex-col px-2 gap-3 md:gap-4 pt-2 w-full">
-            <h2 className="text-xl font-semibold">
-              {tasks.filter((oneTask) => !oneTask.status).length > 0
-                ? "Seznam úkolů"
-                : ""}
-            </h2>
-            {tasks
-              .filter((oneTask) => !oneTask.status)
-              .map((oneTask) => (
-                <Task
-                  key={oneTask.id}
-                  taskText={oneTask.text}
-                  change={() => handleChange(oneTask.id)}
-                  status={oneTask.status}
-                  deleteTask={() => handleDelete(oneTask.id)}
-                  modal="modal-edit"
-                  editTask={() => handleEditBtn(oneTask.id)}
-                />
-              ))}
-
-            <h2 className="text-xl font-semibold mt-12">
-              {tasks.filter((oneTask) => oneTask.status).length > 0
-                ? "Dokončeno"
-                : ""}
-            </h2>
-            {tasks
-              .filter((oneTask) => oneTask.status)
-              .map((oneTask) => (
-                <Task
-                  key={oneTask.id}
-                  taskText={oneTask.text}
-                  change={() => handleChange(oneTask.id)}
-                  status={oneTask.status}
-                  deleteTask={() => handleDelete(oneTask.id)}
-                  modal="modal-edit"
-                  editTask={() => handleEditBtn(oneTask.id)}
-                />
-              ))}
+            <TaskList
+              tasks={tasks}
+              handleChange={handleChange}
+              handleDelete={handleDelete}
+              handleEditBtn={handleEditBtn}
+            />
           </div>
         </div>
       </div>
