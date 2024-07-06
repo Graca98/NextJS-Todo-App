@@ -15,11 +15,11 @@ export default function TaskPage() {
     spanLabel: "",
     formText: "",
   });
-  const [task, setTask] = useState("");
+  const [task, setTask] = useState("Tohle je testovací úkol :)");
   const [editValue, setEditValue] = useState("");
 
   // Sidebar useState
-  const [openSide, setOpenSide] = useState(true);
+  const [openSide, setOpenSide] = useState(false);
 
   // Načte úkoly z localStorage při načtení komponenty
   useEffect(() => {
@@ -103,7 +103,7 @@ export default function TaskPage() {
     };
 
     setTasks([...tasks, newTask]);
-    setTask("");
+    setTask("Tohle je taky testovací úkol :))");
     setFormState({
       inputLabel: "",
       spanLabel: "",
@@ -119,8 +119,8 @@ export default function TaskPage() {
   };
 
   return (
-    <div className="background">
-      <div className="lg:mx-auto flex w-full max-w-screen-xl">
+    <div className="background flex flex-col">
+      <div className="lg:mx-auto flex w-full min-h-dvh max-w-screen-xl">
         {/* Sidebar */}
         <div
           className={`${
@@ -211,9 +211,10 @@ export default function TaskPage() {
       </div>
 
       {/* Footer */}
-      <div className="mx-auto flex w-full max-w-xl lg:max-w-screen-xl flex-col gap-6 pt-6 pb-4 md:pt-12 md:pb-8 px-1">
+      <div className="bg-white mx-auto w-full max-w-screen-xl gap-6 pt-6 pb-4 md:pt-12 md:pb-8 px-1">
         <div className="flex flex-col items-center">
-          <p className="text-xs">Všechna práva vyhrazena</p>
+          <p className="text-xs text-gray-600">Aplikaci vytvořil Denis G.</p>
+          <p className="text-xs text-gray-600">Všechna práva vyhrazena</p>
         </div>
       </div>
 
