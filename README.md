@@ -40,4 +40,4 @@ Sidebar, který lze zobrazit nebo skrýt, poskytuje další navigační možnost
 Integrace s API: Možnost synchronizace úkolů s cloudovým úložištěm pro zálohování a sdílení mezi více zařízeními.
 Přidání autentizace: Zabezpečení úkolů uživatelskými účty.
 Rozšíření funkcí filtrů: Přidání dalších filtrů pro lepší třídění a vyhledávání úkolů.
-
+.
