@@ -168,7 +168,7 @@ export default function TaskPage() {
         >
           <button
             onClick={() => setOpenSide(!openSide)}
-            className={`absolute -right-5 top-4 btn btn-outline text-black hover:text-white bg-white rounded-full w-fit px-2 gap-1 mb-4 md:mb-2`}
+            className={`absolute -right-5 top-4 btn btn-outline text-black bg-white rounded-full w-fit px-2 gap-1 mb-4 md:mb-2`}
           >
             <FaArrowLeft
               className={`text-xl duration-500  ${!openSide && "rotate-180"} `}
@@ -179,20 +179,20 @@ export default function TaskPage() {
           >
             Sidebar
           </h2>
-          <label
+          <button
             className="inline-flex items-center cursor-pointer w-fit"
             onClick={() => setOpenTaskModal(true)}
             // htmlFor="modal-newTask"
           >
             <IoMdAddCircle className="text-4xl w-10 h-10 shrink-0 rounded block float-left mr-2" />
-            <h2
+            <span
               className={`${
                 !openSide && "scale-0"
               } shrink-0 duration-300 origin-left align-middle items-center`}
             >
               Přidan nový
-            </h2>
-          </label>
+            </span>
+          </button>
         </div>
 
         <div className="flex flex-col w-full">
