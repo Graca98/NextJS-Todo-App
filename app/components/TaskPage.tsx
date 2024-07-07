@@ -10,6 +10,7 @@ import TaskEditForm from "./TaskEditForm";
 // Icons
 import { IoMdAddCircle } from "react-icons/io";
 import { FaArrowLeft } from "react-icons/fa";
+import { IoFilterSharp } from "react-icons/io5";
 
 export default function TaskPage() {
   const [tempID, setTempID] = useState(null);
@@ -157,14 +158,84 @@ export default function TaskPage() {
     setCurrentTime(resultTime);
   }, [handleSubmit]);
 
+  {
+    /* =========================== Filters ================================= */
+  }
+
+  function sortByTimeOldest() {
+    console.log("Seřazuji podle času");
+    const sortedTasks = [...tasks].sort((a, b) => {
+      let dateA = parseCzechDateTime(a.time).getTime();
+      let dateB = parseCzechDateTime(b.time).getTime();
+      return dateA - dateB;
+    });
+    setTasks(sortedTasks);
+  }
+  function sortByTimeNewest() {
+    console.log("Seřazuji podle času");
+    const sortedTasks = [...tasks].sort((a, b) => {
+      let dateA = parseCzechDateTime(a.time).getTime();
+      let dateB = parseCzechDateTime(b.time).getTime();
+      return dateB - dateA;
+    });
+    setTasks(sortedTasks);
+  }
+
+  function sortAlphabeticallyAsc() {
+    console.log("Seřazuji podle abecedy");
+    const sortedTasks = [...tasks].sort((a, b) => {
+      return a.text.localeCompare(b.text);
+    });
+    setTasks(sortedTasks);
+  }
+  function sortAlphabeticallyDesc() {
+    console.log("Seřazuji podle abecedy");
+    const sortedTasks = [...tasks].sort((a, b) => {
+      return b.text.localeCompare(a.text);
+    });
+    setTasks(sortedTasks);
+  }
+
+  function parseCzechDateTime(czechDateTime: string) {
+    const monthNames = {
+      ledna: 0,
+      února: 1,
+      března: 2,
+      dubna: 3,
+      května: 4,
+      června: 5,
+      července: 6,
+      srpna: 7,
+      září: 8,
+      října: 9,
+      listopadu: 10,
+      prosince: 11,
+    };
+
+    // Odstranění přípony a rozdělení na datum a čas
+    const parts = czechDateTime.split(" v ");
+    const dateParts = parts[0].trim().split(" ");
+    const timeParts = parts[1].trim().split(":");
+
+    // Extrahování jednotlivých částí
+    let day = parseInt(dateParts[0], 10);
+    let month = monthNames[dateParts[1]];
+    let year = parseInt(dateParts[2], 10);
+    let hours = parseInt(timeParts[0], 10);
+    let minutes = parseInt(timeParts[1], 10);
+
+    // Vytvoření nového objektu Date
+    return new Date(year, month, day, hours, minutes);
+  }
+
   return (
     <div className="background flex flex-col">
       <div className="lg:mx-auto flex w-full min-h-dvh max-w-screen-xl">
         {/* Sidebar */}
         <div
-          className={`${
+          className={`hidden ${
             openSide ? "w-72" : "w-14"
-          } relative duration-300 bg-white flex flex-col px-2 gap-3 mr-1 md:mr-4 md:gap-4 pt-2`}
+          } relative duration-300 bg-white flex flex-col px-2 gap-3 mr-1 md:mr-4 md:gap-4 pt-2 `}
         >
           <button
             onClick={() => setOpenSide(!openSide)}
@@ -193,15 +264,70 @@ export default function TaskPage() {
               Přidan nový
             </span>
           </button>
+          <button
+            className="inline-flex items-center cursor-pointer w-fit"
+            onClick={() => setOpenTaskModal(true)}
+            // htmlFor="modal-newTask"
+          >
+            <IoMdAddCircle className="text-4xl w-10 h-10 shrink-0 rounded block float-left mr-2" />
+            <span
+              className={`${
+                !openSide && "scale-0"
+              } shrink-0 duration-300 origin-left align-middle items-center`}
+            >
+              Přidan nový
+            </span>
+          </button>
         </div>
 
         <div className="flex flex-col w-full">
           {/* Titulek */}
           <div className="flex flex-col items-center mb-8">
-            <h1 className="text-3xl font-semibold">Todo App</h1>
+            <h1 className="text-3xl font-semibold mt-4">Todo App</h1>
             <p className="text-sm">NextJs ukolníček</p>
           </div>
 
+          <div className="flex justify-between px-2">
+            <button
+              className="btn btn-primary pl-[9px] pr-3 inline-flex items-center w-fit"
+              onClick={() => setOpenTaskModal(true)}
+              // htmlFor="modal-newTask"
+            >
+              <IoMdAddCircle className="text-2xl mr-0.5" />
+              Přidat úkol
+            </button>
+
+            <div className="dropdown">
+              <label
+                className="btn btn-solid-primary inline-flex items-center w-fit px-4"
+                tabIndex={0}
+              >
+                <IoFilterSharp className="mr-1 text-lg" />
+                Filtr
+              </label>
+              <div className="dropdown-menu dropdown-menu-bottom-left">
+                <a
+                  onClick={sortAlphabeticallyAsc}
+                  className="dropdown-item text-sm"
+                >
+                  Abeceda A-Z
+                </a>
+                <a
+                  onClick={sortAlphabeticallyDesc}
+                  className="dropdown-item text-sm"
+                >
+                  Abeceda Z-A
+                </a>
+                <a onClick={sortByTimeOldest} className="dropdown-item text-sm">
+                  Čas od nejstaršího{" "}
+                  <span className="text-stone-400">(Default)</span>
+                </a>
+                <a onClick={sortByTimeNewest} className="dropdown-item text-sm">
+                  Čas od nejnovějšího
+                </a>
+              </div>
+            </div>
+          </div>
           {/* Seznam úkolů */}
           <div className="flex flex-col px-2 gap-3 md:gap-4 pt-2 w-full mb-12">
             <TaskList
@@ -216,14 +342,14 @@ export default function TaskPage() {
       </div>
 
       {/* Footer */}
-      <div className="bg-white mx-auto w-full max-w-screen-xl gap-6 pt-6 pb-4 md:pt-12 md:pb-8 px-1">
+      <div className="mx-auto w-full max-w-screen-xl gap-6 pt-6 pb-4 md:pt-12 md:pb-8 px-1">
         <div className="flex flex-col items-center">
           <p className="text-xs text-gray-600">Aplikaci vytvořil Denis G.</p>
-          <p className="text-xs text-gray-600">Všechna práva vyhrazena</p>
+          {/* <p className="text-xs text-gray-600">Všechna práva vyhrazena</p> */}
         </div>
       </div>
 
-      {/* ================================================================================================ */}
+      {/* =========================== Modals ================================= */}
       {/* Modal na přidání tasku */}
       <TaskForm
         openTaskModal={openTaskModal}

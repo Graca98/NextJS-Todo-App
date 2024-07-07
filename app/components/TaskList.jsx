@@ -2,7 +2,6 @@ import Task from "./Task";
 
 const TaskList = ({ tasks, handleChange, handleDelete, handleEditBtn, setOpenEditModal }) => {
 
-
   return (<>
     <h2 className="text-xl font-semibold">
       {tasks.filter((oneTask) => !oneTask.status).length > 0

@@ -1,7 +1,5 @@
 "use client";
 
-//todo Uklid kódu
-
 import { FaClock } from "react-icons/fa6";
 import { HiPencil } from "react-icons/hi2";
 import { BsTrash } from "react-icons/bs";
