@@ -1,12 +1,14 @@
 "use client";
 
 //todo Další úklid kódu
+//todo Opravit filtr podle času
 
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import TaskList from "./TaskList";
 import TaskForm from "./TaskForm";
 import TaskEditForm from "./TaskEditForm";
+import Sidebar from "./Sidebar";
 // Icons
 import { IoMdAddCircle } from "react-icons/io";
 import { FaArrowLeft } from "react-icons/fa";
@@ -25,6 +27,7 @@ export default function TaskPage() {
     spanLabel: "",
     formText: "",
   });
+  const [taskDate, setTaskDate] = useState("");
   // Sidebar useState
   const [openSide, setOpenSide] = useState(false);
 
@@ -54,7 +57,7 @@ export default function TaskPage() {
   // Změní status (true/false) tasku při kliknutí na checkbox
   const handleChange = (id: number) => {
     let handleStatus = tasks.map((task) =>
-      task.id === id ? { ...task, status: !task.status } : task
+      task.id === id ? { ...task, status: !task.status } : task,
     );
 
     setTasks(handleStatus);
@@ -81,7 +84,8 @@ export default function TaskPage() {
       id: uuidv4(),
       text: task,
       status: false,
-      time: currentTime,
+      time: parseCzechDate()
+      //time: currentTime,
     };
 
     console.log(`Task byl přidán: ${currentTime}`);
@@ -93,6 +97,7 @@ export default function TaskPage() {
       spanLabel: "",
       formText: "",
     });
+    setTaskDate("");
     setOpenTaskModal(false);
   };
 
@@ -112,7 +117,7 @@ export default function TaskPage() {
   // Save button v edit modalu
   const handleEdit = (id: number) => {
     const editedTasks = tasks.map((one) =>
-      one.id === id ? { ...one, text: editValue } : one
+      one.id === id ? { ...one, text: editValue } : one,
     );
 
     setTasks(editedTasks);
@@ -196,6 +201,16 @@ export default function TaskPage() {
     setTasks(sortedTasks);
   }
 
+  function parseCzechDate() {
+    const dateInput = taskDate;
+    if (dateInput) {
+      const [year, month, day] = dateInput.split("-");
+      const czDate = `${day}.${month}.${year}`;
+      return czDate;
+    }
+  }
+
+  //todo Odstranit funkci
   function parseCzechDateTime(czechDateTime: string) {
     const monthNames = {
       ledna: 0,
@@ -232,7 +247,8 @@ export default function TaskPage() {
     <div className="background flex flex-col">
       <div className="lg:mx-auto flex w-full min-h-dvh max-w-screen-xl">
         {/* Sidebar */}
-        <div
+        <Sidebar openSide={openSide} setOpenSide={setOpenSide} />
+        {/*<div
           className={`hidden ${
             openSide ? "w-72" : "w-14"
           } relative duration-300 bg-white flex flex-col px-2 gap-3 mr-1 md:mr-4 md:gap-4 pt-2 `}
@@ -278,13 +294,19 @@ export default function TaskPage() {
               Přidan nový
             </span>
           </button>
-        </div>
+        </div>*/}
 
         <div className="flex flex-col w-full">
           {/* Titulek */}
           <div className="flex flex-col items-center mb-8">
             <h1 className="text-3xl font-semibold mt-4">Todo App</h1>
             <p className="text-sm">NextJs ukolníček</p>
+            <button
+              onClick={() => setOpenSide(true)}
+              className="btn btn-success"
+            >
+              Otevřit sidebar
+            </button>
           </div>
 
           <div className="flex justify-between px-2">
@@ -359,6 +381,8 @@ export default function TaskPage() {
         task={task}
         setTask={setTask}
         handleSubmit={handleSubmit}
+        taskDate={taskDate}
+        setTaskDate={setTaskDate}
       />
 
       {/* Modal na edit tasků */}

@@ -1,5 +1,7 @@
 "use client";
 
+//todo Změnit ikonu hodinek na ikonu datumu
+
 import { FaClock } from "react-icons/fa6";
 import { HiPencil } from "react-icons/hi2";
 import { BsTrash } from "react-icons/bs";
