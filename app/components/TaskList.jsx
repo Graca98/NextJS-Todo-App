@@ -26,7 +26,7 @@ const TaskList = ({ tasks, handleChange, handleDelete, handleEditBtn, setOpenEdi
         ))
     }
 
-    <h2 className="text-xl font-semibold mt-12">
+    <h2 className="text-xl font-semibold mt-8">
       {tasks.filter((oneTask) => oneTask.status).length > 0
         ? "Dokončeno"
         : ""}
