@@ -3,6 +3,7 @@
 //todo Další úklid kódu
 //todo Opravit filtr podle času
 
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import TaskList from "./TaskList";
@@ -29,6 +30,8 @@ export default function TaskPage() {
   const [time, setTime] = useState("");
   // Sidebar useState
   const [openSide, setOpenSide] = useState(false);
+
+  const router = useRouter();
 
   // Načte úkoly z localStorage při načtení komponenty
   useEffect(() => {
@@ -73,7 +76,7 @@ export default function TaskPage() {
     setTasks(newTasks);
   };
   // Vytvoří nový task
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (task.trim() === "") {
       // setFormState({
       //   inputLabel: "input-error",
@@ -92,14 +95,29 @@ export default function TaskPage() {
 
     const newTask = {
       id: uuidv4(),
-      text: task.trim(),
+      title: task.trim(),
       status: false,
-      time: parseCzechDate(),
-      added: time,
-      //time: currentTime,
+      timeToComplete: parseCzechDate(),
+      timeAdded: time,
     };
 
     setTasks([newTask, ...tasks]);
+
+    const res = await fetch("../api/Tasks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ newTask }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to create");
+    }
+
+    // router.refresh();
+    // router.push("/");
+
     setTask("");
     setFormState({
       inputLabel: "",
