@@ -11,11 +11,18 @@ export async function POST(req) {
     const taskData = body.newTask;
     const task = await TaskModel.create(taskData);
     console.log("Created task:", task); // Logujte, co bylo vytvořeno
-    return NextResponse.json({ message: "Task created" }, { status: 201 });
+    return new NextResponse(JSON.stringify({ message: "Task created" }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
-    return NextResponse.json(
-      { message: "Error", error: error.message },
-      { status: 500 }
+    console.error("Failed to create task:", error);
+    return new NextResponse(
+      JSON.stringify({ message: "Error", error: error.message }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
     );
   }
 }
