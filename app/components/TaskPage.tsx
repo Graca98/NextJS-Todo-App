@@ -159,8 +159,8 @@ export default function TaskPage() {
   function sortByTimeOldest() {
     console.log("Seřazuji podle času");
     const sortedTasks = [...tasks].sort((a, b) => {
-      let dateA = new Date(a.added).getTime();
-      let dateB = new Date(b.added).getTime();
+      let dateA = new Date(a.timeAdded).getTime();
+      let dateB = new Date(b.timeAdded).getTime();
       return dateA - dateB;
     });
     setTasks(sortedTasks);
@@ -168,8 +168,8 @@ export default function TaskPage() {
   function sortByTimeNewest() {
     console.log("Seřazuji podle času");
     const sortedTasks = [...tasks].sort((a, b) => {
-      let dateA = new Date(a.added).getTime();
-      let dateB = new Date(b.added).getTime();
+      let dateA = new Date(a.timeAdded).getTime();
+      let dateB = new Date(b.timeAdded).getTime();
       return dateB - dateA;
     });
     setTasks(sortedTasks);
@@ -178,14 +178,14 @@ export default function TaskPage() {
   function sortAlphabeticallyAsc() {
     console.log("Seřazuji podle abecedy");
     const sortedTasks = [...tasks].sort((a, b) => {
-      return a.text.localeCompare(b.text);
+      return a.title.localeCompare(b.title);
     });
     setTasks(sortedTasks);
   }
   function sortAlphabeticallyDesc() {
     console.log("Seřazuji podle abecedy");
     const sortedTasks = [...tasks].sort((a, b) => {
-      return b.text.localeCompare(a.text);
+      return b.title.localeCompare(a.title);
     });
     setTasks(sortedTasks);
   }
