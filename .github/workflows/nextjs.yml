@@ -79,10 +79,10 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./out
-      - name: Build NextJS
-        run: yarn build
+      - name: Build with Next.js
+        run: ${{ steps.detect-package-manager.outputs.runner }} next build
         env:
-          MONGODB_URL: ${{ secrets.MONGODB_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
   # Deployment job
   deploy:
