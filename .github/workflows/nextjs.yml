@@ -79,6 +79,10 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./out
+      - name: Build NextJS
+        run: yarn build
+        env:
+          FIRE_CREDS: ${{ secrets.MONGODB_URL }}
 
   # Deployment job
   deploy:
