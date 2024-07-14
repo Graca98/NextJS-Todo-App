@@ -3,6 +3,7 @@
 //todo Další úklid kódu
 //todo Opravit filtr podle času
 
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import TaskList from "./TaskList";
@@ -29,6 +30,8 @@ export default function TaskPage() {
   const [time, setTime] = useState("");
   // Sidebar useState
   const [openSide, setOpenSide] = useState(false);
+
+  const router = useRouter();
 
   // Načte úkoly z localStorage při načtení komponenty
   useEffect(() => {
@@ -73,7 +76,7 @@ export default function TaskPage() {
     setTasks(newTasks);
   };
   // Vytvoří nový task
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (task.trim() === "") {
       // setFormState({
       //   inputLabel: "input-error",
@@ -92,14 +95,29 @@ export default function TaskPage() {
 
     const newTask = {
       id: uuidv4(),
-      text: task.trim(),
+      title: task.trim(),
       status: false,
-      time: parseCzechDate(),
-      added: time,
-      //time: currentTime,
+      timeToComplete: parseCzechDate(),
+      timeAdded: time,
     };
 
     setTasks([newTask, ...tasks]);
+
+    const res = await fetch("../api/Tasks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ newTask }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to create");
+    }
+
+    // router.refresh();
+    // router.push("/");
+
     setTask("");
     setFormState({
       inputLabel: "",
@@ -141,8 +159,8 @@ export default function TaskPage() {
   function sortByTimeOldest() {
     console.log("Seřazuji podle času");
     const sortedTasks = [...tasks].sort((a, b) => {
-      let dateA = new Date(a.added).getTime();
-      let dateB = new Date(b.added).getTime();
+      let dateA = new Date(a.timeAdded).getTime();
+      let dateB = new Date(b.timeAdded).getTime();
       return dateA - dateB;
     });
     setTasks(sortedTasks);
@@ -150,8 +168,8 @@ export default function TaskPage() {
   function sortByTimeNewest() {
     console.log("Seřazuji podle času");
     const sortedTasks = [...tasks].sort((a, b) => {
-      let dateA = new Date(a.added).getTime();
-      let dateB = new Date(b.added).getTime();
+      let dateA = new Date(a.timeAdded).getTime();
+      let dateB = new Date(b.timeAdded).getTime();
       return dateB - dateA;
     });
     setTasks(sortedTasks);
@@ -160,14 +178,14 @@ export default function TaskPage() {
   function sortAlphabeticallyAsc() {
     console.log("Seřazuji podle abecedy");
     const sortedTasks = [...tasks].sort((a, b) => {
-      return a.text.localeCompare(b.text);
+      return a.title.localeCompare(b.title);
     });
     setTasks(sortedTasks);
   }
   function sortAlphabeticallyDesc() {
     console.log("Seřazuji podle abecedy");
     const sortedTasks = [...tasks].sort((a, b) => {
-      return b.text.localeCompare(a.text);
+      return b.title.localeCompare(a.title);
     });
     setTasks(sortedTasks);
   }

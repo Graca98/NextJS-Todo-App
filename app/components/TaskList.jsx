@@ -1,53 +1,66 @@
-import Task from "./Task";
+import TaskCard from "./TaskCard";
 
-const TaskList = ({ tasks, handleChange, handleDelete, handleEditBtn, setOpenEditModal }) => {
+const TaskList = ({
+  tasks,
+  handleChange,
+  handleDelete,
+  handleEditBtn,
+  setOpenEditModal,
+}) => {
+  //todo GET, momentálně problém s client componentou a async/await
+  // const url = "http://localhost:3000/api/Tasks"
 
-  return (<>
-    <h2 className="text-xl font-semibold">
-      {tasks.filter((oneTask) => !oneTask.status).length > 0
-        ? "Seznam úkolů"
-        : ""}
-    </h2>
+  // const getTasks = async () => {
+  //   try {
+  //     const res = await fetch(url, {
+  //       cache: "no-store"
+  //     })
+  //     return res.json()
+  //   } catch(error) {
+  //     console.log("Failed to get tasks", error)
+  //   }
+  // }
 
-    {
-      tasks
-        .filter((oneTask) => !oneTask.status)
-        .map((oneTask) => (
-          <Task
-            key={oneTask.id}
-            taskText={oneTask.text}
-            status={oneTask.status}
-            taskTime={oneTask.time}
-            change={() => handleChange(oneTask.id)}
-            deleteTask={() => handleDelete(oneTask.id)}
-            editTask={() => handleEditBtn(oneTask.id)}
+  return (
+    <>
+      <h2 className="text-xl font-semibold">
+        {tasks.filter((task) => !task.status).length > 0 ? "Seznam úkolů" : ""}
+      </h2>
+
+      {tasks
+        .filter((task) => !task.status)
+        .map((task) => (
+          <TaskCard
+            key={task.id}
+            title={task.title}
+            status={task.status}
+            timeToComplete={task.timeToComplete}
+            change={() => handleChange(task.id)}
+            deleteTask={() => handleDelete(task.id)}
+            editTask={() => handleEditBtn(task.id)}
             setOpenEditModal={setOpenEditModal}
           />
-        ))
-    }
+        ))}
 
-    <h2 className="text-xl font-semibold mt-8">
-      {tasks.filter((oneTask) => oneTask.status).length > 0
-        ? "Dokončeno"
-        : ""}
-    </h2>
-    {
-      tasks
-        .filter((oneTask) => oneTask.status)
-        .map((oneTask) => (
-          <Task
-            key={oneTask.id}
-            taskText={oneTask.text}
-            status={oneTask.status}
-            taskTime={oneTask.time}
-            change={() => handleChange(oneTask.id)}
-            deleteTask={() => handleDelete(oneTask.id)}
-            editTask={() => handleEditBtn(oneTask.id)}
+      <h2 className="text-xl font-semibold mt-8">
+        {tasks.filter((task) => task.status).length > 0 ? "Dokončeno" : ""}
+      </h2>
+      {tasks
+        .filter((task) => task.status)
+        .map((task) => (
+          <TaskCard
+            key={task.id}
+            title={task.title}
+            status={task.status}
+            timeToComplete={task.timeToComplete}
+            change={() => handleChange(task.id)}
+            deleteTask={() => handleDelete(task.id)}
+            editTask={() => handleEditBtn(task.id)}
             setOpenEditModal={setOpenEditModal}
           />
-        ))
-    }
-  </>)
-}
+        ))}
+    </>
+  );
+};
 
-export default TaskList
+export default TaskList;

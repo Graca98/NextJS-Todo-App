@@ -19,7 +19,7 @@ const AddTask = ({
       spanLabel: "",
       formText: "",
     });
-    setTaskDate("")
+    setTaskDate("");
   };
 
   const handleKeyDown = (e) => {
@@ -32,7 +32,7 @@ const AddTask = ({
   };
 
   const handleDate = (e) => {
-    setTaskDate(e.target.value)
+    setTaskDate(e.target.value);
   };
 
   function getUSToday() {
@@ -50,7 +50,10 @@ const AddTask = ({
 
   return (
     <>
-      <label htmlFor="addTask" className={`flex justify-start cursor-pointer items-center gap-2 shadow-md p-2 bg-white w-full mb-6`}>
+      <label
+        htmlFor="addTask"
+        className={`flex justify-start cursor-pointer items-center gap-2 shadow-md p-2 bg-white w-full mb-6`}
+      >
         <input
           type="checkbox"
           className="checkbox checkbox-success checkbox-lg bg-white w-6 flex-shrink-0"
@@ -94,7 +97,6 @@ const AddTask = ({
           </button>
         </div>
       </label>
-
 
       {/* <input
         className="modal-state"
