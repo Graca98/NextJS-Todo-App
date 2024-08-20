@@ -31,13 +31,13 @@ const TaskList = ({
         .filter((task) => !task.status)
         .map((task) => (
           <TaskCard
-            key={task.id}
+            key={task._id}
             title={task.title}
             status={task.status}
             timeToComplete={task.timeToComplete}
-            change={() => handleChange(task.id)}
-            deleteTask={() => handleDelete(task.id)}
-            editTask={() => handleEditBtn(task.id)}
+            change={() => handleChange(task._id)}
+            deleteTask={() => handleDelete(task._id)}
+            editTask={() => handleEditBtn(task._id)}
             setOpenEditModal={setOpenEditModal}
           />
         ))}
@@ -49,13 +49,13 @@ const TaskList = ({
         .filter((task) => task.status)
         .map((task) => (
           <TaskCard
-            key={task.id}
+            key={task._id}
             title={task.title}
             status={task.status}
             timeToComplete={task.timeToComplete}
-            change={() => handleChange(task.id)}
-            deleteTask={() => handleDelete(task.id)}
-            editTask={() => handleEditBtn(task.id)}
+            change={() => handleChange(task._id)}
+            deleteTask={() => handleDelete(task._id)}
+            editTask={() => handleEditBtn(task._id)}
             setOpenEditModal={setOpenEditModal}
           />
         ))}

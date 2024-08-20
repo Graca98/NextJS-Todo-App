@@ -7,7 +7,7 @@ const TaskEditForm = ({
   editValue,
   setEditValue,
   handleFocus,
-  handleEdit,
+  handleSaveEdit,
 }) => {
   const handleCancelBtn = () => {
     setEditValue("");
@@ -21,7 +21,7 @@ const TaskEditForm = ({
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
-      handleEdit(tempID);
+      handleSaveEdit(tempID);
     }
     if (e.key === "Escape") {
       handleCancelBtn();
@@ -52,7 +52,7 @@ const TaskEditForm = ({
                 onKeyDown={handleKeyDown}
                 onChange={(e) => setEditValue(e.target.value)}
                 onFocus={handleFocus}
-                value={editValue}
+                value={editValue || ""}
               />
               {/* <label className="form-label">
               <span className="form-label-alt">Neplatný formát</span>
@@ -62,7 +62,7 @@ const TaskEditForm = ({
             <div className="flex gap-3 w-full mx-auto justify-center">
               <label
                 className="btn btn-success w-32"
-                onClick={() => handleEdit(tempID)}
+                onClick={() => handleSaveEdit(tempID)}
               >
                 Uložit
               </label>

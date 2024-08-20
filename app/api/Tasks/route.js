@@ -38,3 +38,50 @@ export async function GET() {
     );
   }
 }
+
+export async function PATCH(req) {
+  await connectDB();
+
+  try {
+    const { id, updateData } = await req.json();
+    const updatedTask = await TaskModel.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
+
+    if (!updatedTask) {
+      return NextResponse.json({ message: "Task not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(
+      { message: "Task updated", task: updatedTask },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Failed to update task:", error);
+    return NextResponse.json(
+      { message: "Error", error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req) {
+  await connectDB();
+
+  try {
+    const { id } = await req.json();
+    const deletedTask = await TaskModel.findByIdAndDelete(id);
+
+    if (!deletedTask) {
+      return NextResponse.json({ message: "Task not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: "Task deleted" }, { status: 200 });
+  } catch (error) {
+    console.error("Failed to delete task:", error);
+    return NextResponse.json(
+      { message: "Error", error: error.message },
+      { status: 500 }
+    );
+  }
+}

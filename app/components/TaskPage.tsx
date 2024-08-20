@@ -1,7 +1,7 @@
 "use client";
 
-//todo Další úklid kódu
-//todo Opravit filtr podle času
+//todo Dodělat handleDetele (smazání tasku z DB)
+//todo Dodělat ukládání statusu úkolu zda je splněn nebo ne (true/false)
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -33,20 +33,42 @@ export default function TaskPage() {
 
   const router = useRouter();
 
-  // Načte úkoly z localStorage při načtení komponenty
+  //? Načte úkoly z localStorage při načtení komponenty
+  // useEffect(() => {
+  //   const getLocalStorageTasks = () => {
+  //     try {
+  //       const tasks = localStorage.getItem("tasks");
+  //       return tasks ? JSON.parse(tasks) : [];
+  //     } catch (e) {
+  //       console.error("Error parsing localStorage tasks", e);
+  //       return [];
+  //     }
+  //   };
+
+  //   const storedTasks = getLocalStorageTasks();
+  //   setTasks(storedTasks);
+  // }, []);
+
+  //! TEST
+  //? Načte úkoly z mongoDB
   useEffect(() => {
-    const getLocalStorageTasks = () => {
+    const fetchTasks = async () => {
       try {
-        const tasks = localStorage.getItem("tasks");
-        return tasks ? JSON.parse(tasks) : [];
-      } catch (e) {
-        console.error("Error parsing localStorage tasks", e);
-        return [];
+        const res = await fetch("/api/Tasks");
+        if (!res.ok) {
+          throw new Error("Failed to fetch tasks");
+        }
+        const data = await res.json();
+        console.log(data);
+
+        // Předpokládám, že data.tasks obsahují pole s úkoly
+        setTasks(data.tasks);
+      } catch (error) {
+        console.error("Failed to fetch tasks", error);
       }
     };
 
-    const storedTasks = getLocalStorageTasks();
-    setTasks(storedTasks);
+    fetchTasks();
   }, []);
 
   // Uloží úkoly do localStorage při každé změně úkolů
@@ -59,7 +81,7 @@ export default function TaskPage() {
   // Změní status (true/false) tasku při kliknutí na checkbox
   const handleChange = (id: number) => {
     let handleStatus = tasks.map((task) =>
-      task.id === id ? { ...task, status: !task.status } : task
+      task._id === id ? { ...task, status: !task.status } : task
     );
 
     setTasks(handleStatus);
@@ -67,7 +89,7 @@ export default function TaskPage() {
 
   // Smaže vybraný task
   const handleDelete = (id: number) => {
-    let newTasks = tasks.filter((task) => task.id !== id);
+    let newTasks = tasks.filter((task) => task._id !== id);
     if (newTasks.length === 0) {
       localStorage.removeItem("tasks");
       setTasks([]);
@@ -75,6 +97,31 @@ export default function TaskPage() {
     }
     setTasks(newTasks);
   };
+  //todo Dodělat handleDete
+  // const handleDelete = async (id) => {
+  //   try {
+  //     const res = await fetch(`/api/Tasks`, {
+  //       method: "DELETE",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({ id }),
+  //     });
+
+  //     if (!res.ok) {
+  //       throw new Error("Failed to delete task");
+  //     }
+
+  //     const data = await res.json();
+  //     console.log("Task deleted:", data.task);
+
+  //     // Aktualizace stavu úkolů na klientské straně po úspěšném smazání
+  //     setTasks((prevTasks) => prevTasks.filter((task) => task._id !== id));
+  //   } catch (error) {
+  //     console.error("Error deleting task:", error);
+  //   }
+  // };
+
   // Vytvoří nový task
   const handleSubmit = async () => {
     if (task.trim() === "") {
@@ -94,7 +141,6 @@ export default function TaskPage() {
     }
 
     const newTask = {
-      id: uuidv4(),
       title: task.trim(),
       status: false,
       timeToComplete: parseCzechDate(),
@@ -132,8 +178,8 @@ export default function TaskPage() {
   const handleEditBtn = (id: number) => {
     setTempID(id);
     tasks.map((one) => {
-      if (one.id === id) {
-        setEditValue(one.text);
+      if (one._id === id) {
+        setEditValue(one.title);
       }
     });
   };
@@ -142,14 +188,52 @@ export default function TaskPage() {
   const handleFocus = (event) => event.target.select();
 
   // Save button v edit modalu
-  const handleEdit = (id: number) => {
-    const editedTasks = tasks.map((one) =>
-      one.id === id ? { ...one, text: editValue } : one
-    );
+  // const handleEdit = (id: number) => {
+  //   const editedTasks = tasks.map((one) =>
+  //     one.id === id ? { ...one, text: editValue } : one
+  //   );
 
-    setTasks(editedTasks);
-    setEditValue("");
-    setOpenEditModal(false);
+  //   setTasks(editedTasks);
+  //   setEditValue("");
+  //   setOpenEditModal(false);
+  // };
+  //! TEST handleEdit
+  const handleEdit = async (id, updatedTask) => {
+    try {
+      const res = await fetch(`/api/Tasks`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id, updateData: updatedTask }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update task");
+      }
+
+      const data = await res.json();
+      console.log("Testuji:", data.task.title);
+
+      // Aktualizace úkolů ve stavu po úspěšné aktualizaci na serveru
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task._id === id ? { ...task, ...data.task } : task
+        )
+      );
+    } catch (error) {
+      console.error("Error updating task:", error);
+    }
+  };
+
+  const handleSaveEdit = () => {
+    const updatedTask = {
+      title: editValue, // hodnota z editovacího inputu
+    };
+
+    handleEdit(tempID, updatedTask);
+    setEditValue(""); // Resetuje hodnotu editovaného textu
+    setOpenEditModal(false); // Zavře modální okno po úpravě
   };
 
   {
@@ -323,7 +407,7 @@ export default function TaskPage() {
         editValue={editValue}
         setEditValue={setEditValue}
         handleFocus={handleFocus}
-        handleEdit={handleEdit}
+        handleSaveEdit={handleSaveEdit}
       />
     </div>
   );
