@@ -4,7 +4,7 @@
 //todo Opravit filtr podle času
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import TaskList from "./TaskList";
 import TaskEditForm from "./TaskEditForm";
@@ -75,14 +75,18 @@ export default function TaskPage() {
     }
     setTasks(newTasks);
   };
-  // Vytvoří nový task
-  const handleSubmit = async () => {
+
+  const parseCzechDate = useCallback(() => {
+    if (taskDate) {
+      const [year, month, day] = taskDate.split("-");
+      const czDate = `${day}. ${month}. ${year}`;
+      return czDate;
+    }
+    return ""; // pro jistotu vrátit něco i když taskDate není
+  }, [taskDate]);
+
+  const handleSubmit = useCallback(async () => {
     if (task.trim() === "") {
-      // setFormState({
-      //   inputLabel: "input-error",
-      //   spanLabel: "text-error",
-      //   formText: "Název úkolu nesmí být prázdný",
-      // });
       return;
     } else if (task.length > 100) {
       setFormState({
@@ -103,20 +107,17 @@ export default function TaskPage() {
 
     setTasks([newTask, ...tasks]);
 
-    const res = await fetch("../api/Tasks", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ newTask }),
-    });
+    // const res = await fetch("../api/Tasks", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({ newTask }),
+    // });
 
-    if (!res.ok) {
-      throw new Error("Failed to create");
-    }
-
-    // router.refresh();
-    // router.push("/");
+    // if (!res.ok) {
+    //   throw new Error("Failed to create");
+    // }
 
     setTask("");
     setFormState({
@@ -126,27 +127,27 @@ export default function TaskPage() {
     });
     setTaskDate("");
     setOpenTaskModal(false);
-  };
+  }, [task, time, tasks, parseCzechDate]);
 
   // Po kliknutí na edit button se načte value daného úkolu
   const handleEditBtn = (id: number) => {
     setTempID(id);
     tasks.map((one) => {
       if (one.id === id) {
-        setEditValue(one.text);
+        setEditValue(one.title);
       }
     });
   };
 
   // Vybere veškerý text při kliku na edit input
-  const handleFocus = (event) => event.target.select();
+  const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => event.target.select();
 
   // Save button v edit modalu
   const handleEdit = (id: number) => {
     const editedTasks = tasks.map((one) =>
-      one.id === id ? { ...one, text: editValue } : one
+      one.id === id ? { ...one, title: editValue } : one
     );
-
+    
     setTasks(editedTasks);
     setEditValue("");
     setOpenEditModal(false);
@@ -190,14 +191,7 @@ export default function TaskPage() {
     setTasks(sortedTasks);
   }
 
-  function parseCzechDate() {
-    const dateInput = taskDate;
-    if (dateInput) {
-      const [year, month, day] = dateInput.split("-");
-      const czDate = `${day}. ${month}. ${year}`;
-      return czDate;
-    }
-  }
+  
 
   useEffect(() => {
     let date = new Date();

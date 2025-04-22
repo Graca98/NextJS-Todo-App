@@ -52,7 +52,7 @@ const TaskEditForm = ({
                 onKeyDown={handleKeyDown}
                 onChange={(e) => setEditValue(e.target.value)}
                 onFocus={handleFocus}
-                value={editValue}
+                value={editValue ?? ""}
               />
               {/* <label className="form-label">
               <span className="form-label-alt">Neplatný formát</span>
