@@ -1,6 +1,7 @@
 "use client";
 //! Není nikde použito!!
 
+import Image from "next/image";
 import { RxHamburgerMenu } from "react-icons/rx";
 
 export default function Sidebar({ openSide, setOpenSide }) {
@@ -26,17 +27,22 @@ export default function Sidebar({ openSide, setOpenSide }) {
                 />
               </div>
             </div>
-            <div>Todo...</div>
+            <div className="flex">
+              <div className="border rounded-full p-2 mr-2">
+                <Image src="/next.svg" width={32} height={32} alt="user image"></Image>
+              </div>
+              <h2>User 1</h2> 
+            </div>
             <ul className="mt-4 space-y-1">
-              <li>Link 1</li>
-              <li>Link 2</li>
-              <li>Link 3</li>
+              <li>Důležité</li>
+              <li>Po splatnosti</li>
+              <li>Splněné</li>
             </ul>
             <div className="divider"></div>
             <ul className="mt-4 space-y-1">
-              <li>Link 1</li>
-              <li>Link 2</li>
-              <li>Link 3</li>
+              <li>Kolekce 1</li>
+              <li>Kolekce 2</li>
+              <li>Kolekce 3</li>
             </ul>
           </div>
         </div>
