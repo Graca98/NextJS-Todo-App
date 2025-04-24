@@ -35,7 +35,8 @@ const AddTask = ({
     setTaskDate(e.target.value);
   };
 
-  function getUSToday() {
+  // Hlídá, aby uživatel mohl zadat pouze dnešní a budoucí datum
+  function getMinDateToday() {
     let date = new Date();
     let day = date.getDate();
     let month = date.getMonth() + 1; // getMonth() vrací měsíc od 0 do 11
@@ -45,7 +46,7 @@ const AddTask = ({
     let formattedDay = day < 10 ? `0${day}` : day;
     let formattedMonth = month < 10 ? `0${month}` : month;
 
-    return `${year}-${formattedMonth}-${formattedDay}`; // správný formát pro HTML input date
+    return `${year}-${formattedMonth}-${formattedDay}`;
   }
 
   return (
@@ -83,7 +84,7 @@ const AddTask = ({
             onChange={handleDate}
             onKeyDown={handleKeyDown}
             id="taskId"
-            min={getUSToday()}
+            min={getMinDateToday()}
             className="max-w-28 lg:basis-3/12 text-gray-500 text-xs lg:text-sm"
           ></input>
         </div>

@@ -203,6 +203,7 @@ export default function TaskPage() {
   {
     /* =========================== Filters ================================= */
   }
+  //todo Opravit filtry na sql dotazy
 
   function sortByTimeOldest() {
     console.log("Seřazuji podle času");

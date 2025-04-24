@@ -28,11 +28,26 @@ export async function POST(request) {
             reminder_at
         } = body
 
+        // Hlavní db
         const sql = `
             INSERT INTO tasks (collection_id, name, due_date, important, priority, reminder_at)
             VALUES (?, ?, ?, ?, ?, ?)
         `
         const [result] = await db.execute(sql, [
+            collection_id,
+            name,
+            due_date,
+            important,
+            priority,
+            reminder_at
+        ])
+
+        // Zápis do "archivu" 
+        const sqlLog = `
+            INSERT INTO tasks_log (collection_id, name, due_date, important, priority, reminder_at, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, NOW())
+        `
+        await db.execute(sqlLog, [
             collection_id,
             name,
             due_date,
