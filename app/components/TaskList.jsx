@@ -24,17 +24,17 @@ const TaskList = ({
   return (
     <>
       <h2 className="text-xl font-semibold">
-        {tasks.filter((task) => !task.status).length > 0 ? "Seznam úkolů" : ""}
+        {tasks.filter((task) => !task.is_completed).length > 0 ? "Seznam úkolů" : ""}
       </h2>
 
       {tasks
-        .filter((task) => !task.status)
+        .filter((task) => !task.is_completed)
         .map((task) => (
           <TaskCard
             key={task.id}
-            title={task.title}
-            status={task.status}
-            timeToComplete={task.timeToComplete}
+            title={task.name}
+            status={task.is_completed}
+            timeToComplete={task.due_date}
             change={() => handleChange(task.id)}
             deleteTask={() => handleDelete(task.id)}
             editTask={() => handleEditBtn(task.id)}
@@ -43,16 +43,16 @@ const TaskList = ({
         ))}
 
       <h2 className="text-xl font-semibold mt-8">
-        {tasks.filter((task) => task.status).length > 0 ? "Dokončeno" : ""}
+        {tasks.filter((task) => task.is_completed).length > 0 ? "Dokončeno" : ""}
       </h2>
       {tasks
-        .filter((task) => task.status)
+        .filter((task) => task.is_completed)
         .map((task) => (
           <TaskCard
             key={task.id}
-            title={task.title}
-            status={task.status}
-            timeToComplete={task.timeToComplete}
+            title={task.name}
+            status={task.is_completed}
+            timeToComplete={task.due_date}
             change={() => handleChange(task.id)}
             deleteTask={() => handleDelete(task.id)}
             editTask={() => handleEditBtn(task.id)}

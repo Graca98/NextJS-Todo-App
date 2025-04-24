@@ -10,6 +10,7 @@ import TaskList from "./TaskList";
 import TaskEditForm from "./TaskEditForm";
 import Sidebar from "./Sidebar";
 import AddTask from "./AddTask";
+
 // Icons
 import { IoFilterSharp } from "react-icons/io5";
 import { RxHamburgerMenu } from "react-icons/rx";
@@ -31,35 +32,64 @@ export default function TaskPage() {
   // Sidebar useState
   const [openSide, setOpenSide] = useState(false);
 
-  const router = useRouter();
-
-  // Načte úkoly z localStorage při načtení komponenty
-  useEffect(() => {
-    const getLocalStorageTasks = () => {
-      try {
-        const tasks = localStorage.getItem("tasks");
-        return tasks ? JSON.parse(tasks) : [];
-      } catch (e) {
-        console.error("Error parsing localStorage tasks", e);
-        return [];
-      }
-    };
-
-    const storedTasks = getLocalStorageTasks();
-    setTasks(storedTasks);
-  }, []);
-
-  // Uloží úkoly do localStorage při každé změně úkolů
-  useEffect(() => {
-    if (tasks.length > 0) {
-      localStorage.setItem("tasks", JSON.stringify(tasks));
+  // Načte úkoly z mysql database
+  const fetchData = useCallback(async () => {
+    try {
+      const data = await fetch('/api/tasks')
+      const response = await data.json()
+      setTasks(response ?? "")
+      console.log(response)
+    } catch (error) {
+      console.log(error)
     }
-  }, [tasks]);
+  }, [])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+  
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //         const data = await fetch('/api/tasks')
+  //         const response = await data.json()
+  //         setTasks(response ?? "")
+  //         console.log(response);
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   }
+  //   fetchData()
+  // }, [])
+
+  //? Načte úkoly z localStorage při načtení komponenty
+  // useEffect(() => {
+  //   const getLocalStorageTasks = () => {
+  //     try {
+  //       const tasks = localStorage.getItem("tasks");
+  //       return tasks ? JSON.parse(tasks) : [];
+  //     } catch (e) {
+  //       console.error("Error parsing localStorage tasks", e);
+  //       return [];
+  //     }
+  //   };
+
+  //   const storedTasks = getLocalStorageTasks();
+  //   setTasks(storedTasks);
+  // }, []);
+
+  //? Uloží úkoly do localStorage při každé změně úkolů
+  // useEffect(() => {
+  //   if (tasks.length > 0) {
+  //     localStorage.setItem("tasks", JSON.stringify(tasks));
+  //   }
+  // }, [tasks]);
 
   // Změní status (true/false) tasku při kliknutí na checkbox
   const handleChange = (id: number) => {
+    //todo Přidat metodu PUT nebo PATCH
     let handleStatus = tasks.map((task) =>
-      task.id === id ? { ...task, status: !task.status } : task
+      task.id === id ? { ...task, is_completed: !task.is_completed } : task
     );
 
     setTasks(handleStatus);
@@ -67,6 +97,7 @@ export default function TaskPage() {
 
   // Smaže vybraný task
   const handleDelete = (id: number) => {
+    //todo přidat metodu DELETE
     let newTasks = tasks.filter((task) => task.id !== id);
     if (newTasks.length === 0) {
       localStorage.removeItem("tasks");
@@ -85,6 +116,7 @@ export default function TaskPage() {
     return ""; // pro jistotu vrátit něco i když taskDate není
   }, [taskDate]);
 
+  // Vytvoří úkol
   const handleSubmit = useCallback(async () => {
     if (task.trim() === "") {
       return;
@@ -92,32 +124,42 @@ export default function TaskPage() {
       setFormState({
         inputLabel: "input-error",
         spanLabel: "text-error",
-        formText: `Zadaný úkol je příliš dlouhý (${task.length}/100)`,
+        formText: `Úkol je příliš dlouhý (${task.length}/100)`,
       });
       return;
     }
 
+    // const newTask = {
+    //   id: uuidv4(),
+    //   title: task.trim(),
+    //   status: false,
+    //   timeToComplete: parseCzechDate(),
+    //   timeAdded: time,
+    // };
+
     const newTask = {
-      id: uuidv4(),
-      title: task.trim(),
-      status: false,
-      timeToComplete: parseCzechDate(),
-      timeAdded: time,
-    };
+      collection_id: 1,
+      name: task.trim(),
+      due_date: null,
+      important: false,
+      priority: 'medium',
+      reminder_at: null
+    }
 
-    setTasks([newTask, ...tasks]);
+    try {
+      const res = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTask),
+      })
+      const result = await res.json()
+      console.log(result)
+    } catch (error) {
+      console.error(error)
+    }
 
-    // const res = await fetch("../api/Tasks", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({ newTask }),
-    // });
-
-    // if (!res.ok) {
-    //   throw new Error("Failed to create");
-    // }
+    // setTasks([newTask, ...tasks]);
+    fetchData()
 
     setTask("");
     setFormState({
@@ -125,16 +167,16 @@ export default function TaskPage() {
       spanLabel: "",
       formText: "",
     });
-    setTaskDate("");
+    // setTaskDate("");
     setOpenTaskModal(false);
-  }, [task, time, tasks, parseCzechDate]);
+  }, [task, fetchData]);
 
   // Po kliknutí na edit button se načte value daného úkolu
   const handleEditBtn = (id: number) => {
     setTempID(id);
-    tasks.map((one) => {
-      if (one.id === id) {
-        setEditValue(one.title);
+    tasks.map((task) => {
+      if (task.id === id) {
+        setEditValue(task.name);
       }
     });
   };
@@ -144,8 +186,9 @@ export default function TaskPage() {
 
   // Save button v edit modalu
   const handleEdit = (id: number) => {
+    //todo přidat metodu PUT
     const editedTasks = tasks.map((one) =>
-      one.id === id ? { ...one, title: editValue } : one
+      one.id === id ? { ...one, name: editValue } : one
     );
     
     setTasks(editedTasks);
@@ -283,8 +326,8 @@ export default function TaskPage() {
               task={task}
               setTask={setTask}
               handleSubmit={handleSubmit}
-              taskDate={taskDate}
-              setTaskDate={setTaskDate}
+              // taskDate={taskDate}
+              // setTaskDate={setTaskDate}
             />
           </div>
           {/* Seznam úkolů */}

@@ -20,6 +20,18 @@ export default function TaskCard({
     editTask();
   };
 
+  const formatCzechDate = (dateStr) => {
+    if (!dateStr) return ""
+  
+    const date = new Date(dateStr)
+  
+    const day = String(date.getDate()).padStart(2, "0")
+    const month = String(date.getMonth() + 1).padStart(2, "0")
+    const year = date.getFullYear()
+  
+    return `${day}. ${month}. ${year}`
+  }
+
   return (
     <div className="">
       <label
@@ -43,7 +55,7 @@ export default function TaskCard({
           </span>
           <span className="flex items-center gap-x-3 text-gray-500 text-xs lg:text-sm lg:basis-3/12">
             <PiCalendarDots className={`${!timeToComplete && "hidden"}`} />
-            {timeToComplete}
+            {formatCzechDate(timeToComplete)}
           </span>
         </div>
         <div className="flex justify-end lg:basis-1/12">
