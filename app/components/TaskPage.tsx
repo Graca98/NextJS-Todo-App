@@ -5,7 +5,6 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
-import { v4 as uuidv4 } from "uuid";
 import TaskList from "./TaskList";
 import TaskEditForm from "./TaskEditForm";
 import Sidebar from "./Sidebar";
@@ -16,6 +15,21 @@ import { IoFilterSharp } from "react-icons/io5";
 import { RxHamburgerMenu } from "react-icons/rx";
 
 export default function TaskPage() {
+  //todo nvarh na přejmenování useStatů
+  // const [editTaskId, setEditTaskId] = useState(null);
+  // const [tasks, setTasks] = useState([]);
+  // const [task, setTask] = useState(""); // název nového úkolu
+  // const [openTaskModal, setOpenTaskModal] = useState(false);
+  // const [openEditModal, setOpenEditModal] = useState(false);
+  // const [editTaskName, setEditTaskName] = useState(""); // název při editaci
+  // const [formState, setFormState] = useState({
+  //   inputLabel: "",
+  //   spanLabel: "",
+  //   formText: "",
+  // });
+  // const [dueDate, setDueDate] = useState(""); // nově přejmenováno
+  // const [openSide, setOpenSide] = useState(false);
+
   const [tempID, setTempID] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [task, setTask] = useState("");
@@ -28,7 +42,6 @@ export default function TaskPage() {
     formText: "",
   });
   const [taskDate, setTaskDate] = useState("");
-  const [time, setTime] = useState("");
   // Sidebar useState
   const [openSide, setOpenSide] = useState(false);
 
@@ -107,15 +120,6 @@ export default function TaskPage() {
     setTasks(newTasks);
   };
 
-  const parseCzechDate = useCallback(() => {
-    if (taskDate) {
-      const [year, month, day] = taskDate.split("-");
-      const czDate = `${day}. ${month}. ${year}`;
-      return czDate;
-    }
-    return ""; // pro jistotu vrátit něco i když taskDate není
-  }, [taskDate]);
-
   // Vytvoří úkol
   const handleSubmit = useCallback(async () => {
     if (task.trim() === "") {
@@ -140,7 +144,7 @@ export default function TaskPage() {
     const newTask = {
       collection_id: 1,
       name: task.trim(),
-      due_date: null,
+      due_date: taskDate || null,
       important: false,
       priority: 'medium',
       reminder_at: null
@@ -169,7 +173,7 @@ export default function TaskPage() {
     });
     // setTaskDate("");
     setOpenTaskModal(false);
-  }, [task, fetchData]);
+  }, [task, taskDate, fetchData]);
 
   // Po kliknutí na edit button se načte value daného úkolu
   const handleEditBtn = (id: number) => {
@@ -233,28 +237,6 @@ export default function TaskPage() {
     });
     setTasks(sortedTasks);
   }
-
-  
-
-  useEffect(() => {
-    let date = new Date();
-    let day = date.getDate();
-    let month = date.getMonth() + 1;
-    let year = date.getFullYear();
-    let hours = date.getHours();
-    let minutes = date.getMinutes();
-    let seconds = date.getSeconds();
-
-    let formattedDay = day < 10 ? `0${day}` : day;
-    let formattedMonth = month < 10 ? `0${month}` : month;
-    let formattedHours = hours < 10 ? `0${hours}` : hours;
-    let formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-    let formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
-
-    setTime(
-      `${year}-${formattedMonth}-${formattedDay}T${formattedHours}:${formattedMinutes}:${formattedSeconds}`
-    );
-  }, [handleSubmit]);
 
   return (
     <div className="background flex flex-col">
@@ -326,8 +308,8 @@ export default function TaskPage() {
               task={task}
               setTask={setTask}
               handleSubmit={handleSubmit}
-              // taskDate={taskDate}
-              // setTaskDate={setTaskDate}
+              taskDate={taskDate}
+              setTaskDate={setTaskDate}
             />
           </div>
           {/* Seznam úkolů */}

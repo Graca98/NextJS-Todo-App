@@ -7,9 +7,9 @@ const AddTask = ({
   setFormState,
   task,
   setTask,
-  handleSubmit
-  // taskDate,
-  // setTaskDate,
+  handleSubmit,
+  taskDate,
+  setTaskDate,
 }) => {
   const handleCancelBtn = () => {
     setTask("");
@@ -19,7 +19,7 @@ const AddTask = ({
       spanLabel: "",
       formText: "",
     });
-    // setTaskDate("");
+    setTaskDate("");
   };
 
   const handleKeyDown = (e) => {
@@ -77,14 +77,15 @@ const AddTask = ({
               </span>
             </label>
           </div>
-          {/* <input
+          <input
             type="date"
             value={taskDate}
             onChange={handleDate}
             onKeyDown={handleKeyDown}
             id="taskId"
+            min={getUSToday()}
             className="max-w-28 lg:basis-3/12 text-gray-500 text-xs lg:text-sm"
-          ></input> */}
+          ></input>
         </div>
         <div className="flex justify-end lg:basis-1/12">
           <button
