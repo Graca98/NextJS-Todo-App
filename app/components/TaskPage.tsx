@@ -15,22 +15,7 @@ import { IoFilterSharp } from "react-icons/io5";
 import { RxHamburgerMenu } from "react-icons/rx";
 
 export default function TaskPage() {
-  //todo nvarh na přejmenování useStatů
-  // const [editTaskId, setEditTaskId] = useState(null);
-  // const [tasks, setTasks] = useState([]);
-  // const [task, setTask] = useState(""); // název nového úkolu
-  // const [openTaskModal, setOpenTaskModal] = useState(false);
-  // const [openEditModal, setOpenEditModal] = useState(false);
-  // const [editTaskName, setEditTaskName] = useState(""); // název při editaci
-  // const [formState, setFormState] = useState({
-  //   inputLabel: "",
-  //   spanLabel: "",
-  //   formText: "",
-  // });
-  // const [dueDate, setDueDate] = useState(""); // nově přejmenováno
-  // const [openSide, setOpenSide] = useState(false);
-
-  const [tempID, setTempID] = useState(null);
+  const [editTaskId, setEditTaskId] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [task, setTask] = useState("");
   const [openTaskModal, setOpenTaskModal] = useState(false);
@@ -60,64 +45,46 @@ export default function TaskPage() {
   useEffect(() => {
     fetchData()
   }, [fetchData])
-  
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //         const data = await fetch('/api/tasks')
-  //         const response = await data.json()
-  //         setTasks(response ?? "")
-  //         console.log(response);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   }
-  //   fetchData()
-  // }, [])
-
-  //? Načte úkoly z localStorage při načtení komponenty
-  // useEffect(() => {
-  //   const getLocalStorageTasks = () => {
-  //     try {
-  //       const tasks = localStorage.getItem("tasks");
-  //       return tasks ? JSON.parse(tasks) : [];
-  //     } catch (e) {
-  //       console.error("Error parsing localStorage tasks", e);
-  //       return [];
-  //     }
-  //   };
-
-  //   const storedTasks = getLocalStorageTasks();
-  //   setTasks(storedTasks);
-  // }, []);
-
-  //? Uloží úkoly do localStorage při každé změně úkolů
-  // useEffect(() => {
-  //   if (tasks.length > 0) {
-  //     localStorage.setItem("tasks", JSON.stringify(tasks));
-  //   }
-  // }, [tasks]);
 
   // Změní status (true/false) tasku při kliknutí na checkbox
-  const handleChange = (id: number) => {
-    //todo Přidat metodu PUT nebo PATCH
-    let handleStatus = tasks.map((task) =>
-      task.id === id ? { ...task, is_completed: !task.is_completed } : task
-    );
+  const handleChange = async (id: number) => {
+    try {
+      const taskToUpdate = tasks.find(task => task.id === id)
+      if (!taskToUpdate) return
+  
+      const newStatus = !taskToUpdate.is_completed
+  
+      await fetch(`/api/tasks/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_completed: newStatus })
+      })
+  
+      // Lokálně aktualizujeme stav v UI
+      const updatedTasks = tasks.map(task =>
+        task.id === id ? { ...task, is_completed: newStatus } : task
+      )
+  
+      setTasks(updatedTasks)
+    } catch (error) {
+      console.error("Chyba při změně stavu úkolu:", error)
+    }
 
-    setTasks(handleStatus);
   };
 
   // Smaže vybraný task
-  const handleDelete = (id: number) => {
-    //todo přidat metodu DELETE
-    let newTasks = tasks.filter((task) => task.id !== id);
-    if (newTasks.length === 0) {
-      localStorage.removeItem("tasks");
-      setTasks([]);
-      return;
+  const handleDelete = async (id: number) => {
+    try {
+      await fetch(`/api/tasks/${id}`, {
+        method: 'DELETE'
+      });
+  
+      // Lokálně vymaže úkol ze stavu
+      const newTasks = tasks.filter((task) => task.id !== id);
+      setTasks(newTasks);
+    } catch (error) {
+      console.error("Chyba při mazání úkolu:", error);
     }
-    setTasks(newTasks);
   };
 
   // Vytvoří úkol
@@ -132,14 +99,6 @@ export default function TaskPage() {
       });
       return;
     }
-
-    // const newTask = {
-    //   id: uuidv4(),
-    //   title: task.trim(),
-    //   status: false,
-    //   timeToComplete: parseCzechDate(),
-    //   timeAdded: time,
-    // };
 
     const newTask = {
       collection_id: 1,
@@ -162,7 +121,6 @@ export default function TaskPage() {
       console.error(error)
     }
 
-    // setTasks([newTask, ...tasks]);
     fetchData()
 
     setTask("");
@@ -171,13 +129,12 @@ export default function TaskPage() {
       spanLabel: "",
       formText: "",
     });
-    // setTaskDate("");
     setOpenTaskModal(false);
   }, [task, taskDate, fetchData]);
 
   // Po kliknutí na edit button se načte value daného úkolu
   const handleEditBtn = (id: number) => {
-    setTempID(id);
+    setEditTaskId(id);
     tasks.map((task) => {
       if (task.id === id) {
         setEditValue(task.name);
@@ -185,19 +142,29 @@ export default function TaskPage() {
     });
   };
 
-  // Vybere veškerý text při kliku na edit input
+  // Vybere veškerý text při kliknutí na edit input
   const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => event.target.select();
 
   // Save button v edit modalu
-  const handleEdit = (id: number) => {
-    //todo přidat metodu PUT
-    const editedTasks = tasks.map((one) =>
-      one.id === id ? { ...one, name: editValue } : one
-    );
-    
-    setTasks(editedTasks);
-    setEditValue("");
-    setOpenEditModal(false);
+  const handleEdit = async (id: number) => {
+    try {
+      await fetch(`/api/tasks/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editValue })
+      })
+  
+      // Lokálně upraví úkol
+      const editedTasks = tasks.map((one) =>
+        one.id === id ? { ...one, name: editValue } : one
+      );
+      setTasks(editedTasks);
+      setEditValue("");
+      setOpenEditModal(false);
+    } catch (error) {
+      console.error("Chyba při mazání úkolu:", error);
+    }
+
   };
 
   {
@@ -337,7 +304,7 @@ export default function TaskPage() {
       {/* =========================== Modals ================================= */}
       {/* Modal na edit tasků */}
       <TaskEditForm
-        tempID={tempID}
+        editTaskId={editTaskId}
         openEditModal={openEditModal}
         setOpenEditModal={setOpenEditModal}
         editValue={editValue}

@@ -7,19 +7,6 @@ const TaskList = ({
   handleEditBtn,
   setOpenEditModal,
 }) => {
-  //todo GET, momentálně problém s client componentou a async/await
-  // const url = "http://localhost:3000/api/Tasks"
-
-  // const getTasks = async () => {
-  //   try {
-  //     const res = await fetch(url, {
-  //       cache: "no-store"
-  //     })
-  //     return res.json()
-  //   } catch(error) {
-  //     console.log("Failed to get tasks", error)
-  //   }
-  // }
 
   return (
     <>

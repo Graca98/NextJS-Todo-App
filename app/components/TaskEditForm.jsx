@@ -1,7 +1,7 @@
 //todo Přidat validaci formuláře - tady není zatím žádná
 
 const TaskEditForm = ({
-  tempID,
+  editTaskId,
   openEditModal,
   setOpenEditModal,
   editValue,
@@ -21,7 +21,7 @@ const TaskEditForm = ({
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
-      handleEdit(tempID);
+      handleEdit(editTaskId);
     }
     if (e.key === "Escape") {
       handleCancelBtn();
@@ -62,7 +62,7 @@ const TaskEditForm = ({
             <div className="flex gap-3 w-full mx-auto justify-center">
               <label
                 className="btn btn-success w-32"
-                onClick={() => handleEdit(tempID)}
+                onClick={() => handleEdit(editTaskId)}
               >
                 Uložit
               </label>
