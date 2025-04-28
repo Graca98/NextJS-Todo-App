@@ -14,7 +14,7 @@ import AddTask from "./AddTask";
 import { IoFilterSharp } from "react-icons/io5";
 import { RxHamburgerMenu } from "react-icons/rx";
 
-export default function TaskPage() {
+export default function TaskPage({taskID}) {
   const [editTaskId, setEditTaskId] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [task, setTask] = useState("");
@@ -28,13 +28,13 @@ export default function TaskPage() {
   });
   const [taskDate, setTaskDate] = useState("");
   // Sidebar useState
-  const [openSide, setOpenSide] = useState(false);
+  // const [openSide, setOpenSide] = useState(false);
 
   // Načte úkoly z mysql database
   // Načte úkoly z mysql database
 const fetchData = useCallback(async () => {
   try {
-    const collectionId = 4; 
+    const collectionId = taskID; 
     const data = await fetch(`/api/tasks?collection_id=${collectionId}`);
     const response = await data.json();
     setTasks(response ?? []);
@@ -42,7 +42,7 @@ const fetchData = useCallback(async () => {
   } catch (error) {
     console.log(error);
   }
-}, []);
+}, [taskID]);
 
 
   // const fetchData = useCallback(async () => {
@@ -115,7 +115,7 @@ const fetchData = useCallback(async () => {
     }
 
     const newTask = {
-      collection_id: 1,
+      collection_id: taskID,
       name: task.trim(),
       due_date: taskDate || null,
       important: false,
@@ -144,7 +144,7 @@ const fetchData = useCallback(async () => {
       formText: "",
     });
     setOpenTaskModal(false);
-  }, [task, taskDate, fetchData]);
+  }, [task, taskDate, fetchData, taskID]);
 
   // Po kliknutí na edit button se načte value daného úkolu
   const handleEditBtn = (id: number) => {
@@ -221,98 +221,29 @@ const fetchData = useCallback(async () => {
   }
 
   return (
-    <div className="background flex flex-col">
-      <div className="lg:mx-auto flex w-full min-h-dvh">
-        {/* Sidebar */}
-        <Sidebar openSide={openSide} setOpenSide={setOpenSide} />
-
-        <div className="flex flex-col w-full mx-4 md:mx-6">
-          {/* Titulek */}
-          <div className="flex flex-col mb-8 mt-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <RxHamburgerMenu
-                  onClick={() => setOpenSide(true)}
-                  className={`${openSide && "hidden"} text-xl`}
-                />
-                <h1 className="text-xl font-semibold px-2 py-1.5">Todo App</h1>
-              </div>
-              <div>
-                <div className="dropdown">
-                  <label
-                    className=" inline-flex items-center w-fit px-4"
-                    tabIndex={0}
-                  >
-                    <IoFilterSharp className="mr-1 text-lg" />
-                    Filtr
-                  </label>
-                  <div className="dropdown-menu dropdown-menu-bottom-left">
-                    <a
-                      onClick={sortAlphabeticallyAsc}
-                      className="dropdown-item text-sm"
-                    >
-                      Abeceda A-Z
-                    </a>
-                    <a
-                      onClick={sortAlphabeticallyDesc}
-                      className="dropdown-item text-sm"
-                    >
-                      Abeceda Z-A
-                    </a>
-                    <a
-                      onClick={sortByTimeOldest}
-                      className="dropdown-item text-sm"
-                    >
-                      Čas od nejstaršího{" "}
-                    </a>
-                    <a
-                      onClick={sortByTimeNewest}
-                      className="dropdown-item text-sm"
-                    >
-                      Čas od nejnovějšího
-                      <span className="text-stone-400">(Default)</span>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <span className={`hidden ${openSide ? "pl-2" : "pl-7"} text-xs`}>
-              Zde bude dnešní den, datum
-            </span>
-          </div>
-
-          <div className="">
-            <AddTask
-              openTaskModal={openTaskModal}
-              setOpenTaskModal={setOpenTaskModal}
-              formState={formState}
-              setFormState={setFormState}
-              task={task}
-              setTask={setTask}
-              handleSubmit={handleSubmit}
-              taskDate={taskDate}
-              setTaskDate={setTaskDate}
-            />
-          </div>
-          {/* Seznam úkolů */}
-          <div className="flex flex-col gap-3 md:gap-4 pt-2 w-full mb-12">
-            <TaskList
-              tasks={tasks}
-              handleChange={handleChange}
-              handleDelete={handleDelete}
-              handleEditBtn={handleEditBtn}
-              setOpenEditModal={setOpenEditModal}
-            />
-          </div>
-        </div>
+    <div>
+      <div className="">
+        <AddTask
+          openTaskModal={openTaskModal}
+          setOpenTaskModal={setOpenTaskModal}
+          formState={formState}
+          setFormState={setFormState}
+          task={task}
+          setTask={setTask}
+          handleSubmit={handleSubmit}
+          taskDate={taskDate}
+          setTaskDate={setTaskDate}
+        />
       </div>
-
-      {/* Footer */}
-      <div className="mx-auto w-full max-w-screen-xl gap-6 pt-6 pb-4 md:pt-12 md:pb-8 px-1">
-        <div className="flex flex-col items-center">
-          <p className="text-xs text-gray-600">Aplikaci vytvořil Denis G.</p>
-          {/* <p className="text-xs text-gray-600">Všechna práva vyhrazena</p> */}
-        </div>
+      {/* Seznam úkolů */}
+      <div className="flex flex-col gap-3 md:gap-4 pt-2 w-full mb-12">
+        <TaskList
+          tasks={tasks}
+          handleChange={handleChange}
+          handleDelete={handleDelete}
+          handleEditBtn={handleEditBtn}
+          setOpenEditModal={setOpenEditModal}
+        />
       </div>
 
       {/* =========================== Modals ================================= */}
