@@ -31,16 +31,30 @@ export default function TaskPage() {
   const [openSide, setOpenSide] = useState(false);
 
   // Načte úkoly z mysql database
-  const fetchData = useCallback(async () => {
-    try {
-      const data = await fetch('/api/tasks')
-      const response = await data.json()
-      setTasks(response ?? "")
-      console.log(response)
-    } catch (error) {
-      console.log(error)
-    }
-  }, [])
+  // Načte úkoly z mysql database
+const fetchData = useCallback(async () => {
+  try {
+    const collectionId = 4; 
+    const data = await fetch(`/api/tasks?collection_id=${collectionId}`);
+    const response = await data.json();
+    setTasks(response ?? []);
+    console.log(response);
+  } catch (error) {
+    console.log(error);
+  }
+}, []);
+
+
+  // const fetchData = useCallback(async () => {
+  //   try {
+  //     const data = await fetch('/api/tasks')
+  //     const response = await data.json()
+  //     setTasks(response ?? "")
+  //     console.log(response)
+  //   } catch (error) {
+  //     console.log(error)
+  //   }
+  // }, [])
 
   useEffect(() => {
     fetchData()
