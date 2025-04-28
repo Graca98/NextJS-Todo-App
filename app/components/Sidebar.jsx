@@ -4,12 +4,16 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { IoFilterSharp } from "react-icons/io5";
+import { FiTrash2, FiEdit2, FiCheck, FiX } from "react-icons/fi";
 import TaskPage from "./TaskPage";
 
 export default function Sidebar() {
   const [openSide, setOpenSide] = useState(false);
   const [collections, setCollections] = useState([]);
   const [selectedCollectionId, setSelectedCollectionId] = useState(null);
+  const [newCollectionName, setNewCollectionName] = useState("");
+  const [editId, setEditId] = useState(null);
+  const [editName, setEditName] = useState("");
 
   useEffect(() => {
     const fetchCollections = async () => {
@@ -27,6 +31,47 @@ export default function Sidebar() {
 
     fetchCollections();
   }, []);
+
+  const handleAddCollection = async () => {
+    if (!newCollectionName.trim()) return;
+    await fetch("/api/collections", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newCollectionName.trim() }),
+    });
+    setNewCollectionName("");
+    await fetchCollections();
+  };
+
+  const handleDeleteCollection = async (id) => {
+    if (!confirm("Opravdu chceš smazat kolekci?")) return;
+    await fetch(`/api/collections?id=${id}`, {
+      method: "DELETE",
+    });
+    await fetchCollections();
+  };
+
+  const handleEditCollection = async (id) => {
+    if (!editName.trim()) return;
+    await fetch("/api/collections", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, name: editName.trim() }),
+    });
+    setEditId(null);
+    setEditName("");
+    await fetchCollections();
+  };
+
+  const fetchCollections = async () => {
+    try {
+      const res = await fetch("/api/collections");
+      const data = await res.json();
+      setCollections(data);
+    } catch (error) {
+      console.error("Chyba při načítání kolekcí:", error);
+    }
+  };
 
   return (
     <>
@@ -49,7 +94,7 @@ export default function Sidebar() {
                     className={`${!openSide && "hidden"} text-xl`}
                   />
                 </div>
-                <div className="flex">
+                <div className="flex items-center">
                   <div className="border rounded-full p-2 mr-2">
                     <Image
                       src="/next.svg"
@@ -61,19 +106,76 @@ export default function Sidebar() {
                   <h2>User 1</h2>
                 </div>
 
-                <ul className="mt-4 space-y-1">
+                <ul className="mt-4 space-y-2">
                   {collections.map((col) => (
                     <li
                       key={col.id}
-                      className="cursor-pointer hover:underline"
-                      onClick={() => setSelectedCollectionId(col.id)}
+                      className="flex items-center justify-between"
                     >
-                      {col.name}
+                      {editId === col.id ? (
+                        <>
+                          <input
+                            type="text"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="border p-1 text-sm w-2/3"
+                          />
+                          <div className="flex gap-1">
+                            <FiCheck
+                              onClick={() => handleEditCollection(col.id)}
+                              className="cursor-pointer text-green-600"
+                            />
+                            <FiX
+                              onClick={() => setEditId(null)}
+                              className="cursor-pointer text-red-500"
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <span
+                            onClick={() => setSelectedCollectionId(col.id)}
+                            className="cursor-pointer hover:underline w-2/3"
+                          >
+                            {col.name}
+                          </span>
+                          <div className="flex gap-1">
+                            <FiEdit2
+                              onClick={() => {
+                                setEditId(col.id);
+                                setEditName(col.name);
+                              }}
+                              className="cursor-pointer"
+                            />
+                            <FiTrash2
+                              onClick={() => handleDeleteCollection(col.id)}
+                              className="cursor-pointer text-red-500"
+                            />
+                          </div>
+                        </>
+                      )}
                     </li>
                   ))}
                 </ul>
 
-                <div className="divider"></div>
+                {/* Přidání nové kolekce */}
+                <div className="mt-6">
+                  <input
+                    type="text"
+                    placeholder="Nová kolekce..."
+                    value={newCollectionName}
+                    onChange={(e) => setNewCollectionName(e.target.value)}
+                    className="border p-2 w-full text-sm"
+                  />
+                  <button
+                    onClick={handleAddCollection}
+                    className="bg-blue-500 text-white mt-2 py-2 px-4 rounded text-sm w-full"
+                  >
+                    Přidat kolekci
+                  </button>
+                </div>
+
+                <div className="divider mt-4" />
               </div>
             </div>
           </div>
@@ -102,12 +204,14 @@ export default function Sidebar() {
                       Filtr
                     </label>
                     <div className="dropdown-menu dropdown-menu-bottom-left">
-                      {/* Zde by byly filtry */}
+                      {/* Filtry */}
                     </div>
                   </div>
                 </div>
               </div>
-              <span className={`hidden ${openSide ? "pl-2" : "pl-7"} text-xs`}>
+              <span
+                className={`hidden ${openSide ? "pl-2" : "pl-7"} text-xs`}
+              >
                 Zde bude dnešní den, datum
               </span>
             </div>
