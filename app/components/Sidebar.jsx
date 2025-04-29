@@ -31,6 +31,7 @@ export default function Sidebar() {
 
     fetchCollections();
   }, []);
+  
 
   const handleAddCollection = async () => {
     if (!newCollectionName.trim()) return;
@@ -95,7 +96,8 @@ export default function Sidebar() {
                   />
                 </div>
                 <div className="flex items-center">
-                  <div className="border rounded-full p-2 mr-2">
+                  <h2>User 1</h2>
+                  <div className="border rounded-full p-2 ml-2">
                     <Image
                       src="/next.svg"
                       width={32}
@@ -103,8 +105,26 @@ export default function Sidebar() {
                       alt="user image"
                     />
                   </div>
-                  <h2>User 1</h2>
                 </div>
+
+                {/* Přidání nové kolekce */}
+                <div className="mt-6">
+                  <input
+                    type="text"
+                    placeholder="Nová kolekce..."
+                    value={newCollectionName}
+                    onChange={(e) => setNewCollectionName(e.target.value)}
+                    className="border p-2 w-full text-sm"
+                  />
+                  <button
+                    onClick={handleAddCollection}
+                    className="bg-blue-500 text-white mt-2 py-2 px-4 rounded text-sm w-full"
+                  >
+                    Přidat kolekci
+                  </button>
+                </div>
+
+                <div className="divider mt-4" />
 
                 <ul className="mt-4 space-y-2">
                   {collections.map((col) => (
@@ -158,24 +178,6 @@ export default function Sidebar() {
                   ))}
                 </ul>
 
-                {/* Přidání nové kolekce */}
-                <div className="mt-6">
-                  <input
-                    type="text"
-                    placeholder="Nová kolekce..."
-                    value={newCollectionName}
-                    onChange={(e) => setNewCollectionName(e.target.value)}
-                    className="border p-2 w-full text-sm"
-                  />
-                  <button
-                    onClick={handleAddCollection}
-                    className="bg-blue-500 text-white mt-2 py-2 px-4 rounded text-sm w-full"
-                  >
-                    Přidat kolekci
-                  </button>
-                </div>
-
-                <div className="divider mt-4" />
               </div>
             </div>
           </div>
@@ -190,7 +192,7 @@ export default function Sidebar() {
                     onClick={() => setOpenSide(true)}
                     className={`${openSide && "hidden"} text-xl`}
                   />
-                  <h1 className="text-xl font-semibold px-2 py-1.5">
+                  <h1 className={`text-xl font-semibold px-2 py-1.5 ${openSide ? "pl-0" : "ml-4"}`}>
                     Todo App
                   </h1>
                 </div>
@@ -220,7 +222,7 @@ export default function Sidebar() {
             {selectedCollectionId ? (
               <TaskPage taskID={selectedCollectionId} />
             ) : (
-              <p>Vyber kolekci...</p>
+              <p>Načítám úkoly...</p>
             )}
           </div>
         </div>
