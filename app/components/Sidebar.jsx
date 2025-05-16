@@ -67,6 +67,26 @@ export default function Sidebar() {
     await fetchCollections();
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleAddCollection();
+    }
+    if (e.key === "Escape") {
+      setNewCollectionName("")
+    }
+  };
+
+  const handleEditKeyDown = (e) => {
+    if (!editId) return;
+    if (e.key === "Enter") {
+      handleEditCollection(editId);
+    }
+    if (e.key === "Escape") {
+      setEditId(null);
+    }
+  };
+  
+
   const handlers = useSwipeable({
     onSwipedRight: () => setOpenSide(true),
     onSwipedLeft: () => setOpenSide(false),
@@ -95,7 +115,9 @@ export default function Sidebar() {
                     className={`${!openSide && "hidden"} text-xl`}
                   />
                 </div>
-                <div className="flex items-center">
+
+                {/*todo User - do budoucna */}
+                {/* <div className="flex items-center">
                   <h2>User 1</h2>
                   <div className="border rounded-full p-2 ml-2">
                     <Image
@@ -105,7 +127,7 @@ export default function Sidebar() {
                       alt="user image"
                     />
                   </div>
-                </div>
+                </div> */}
 
                 {/* Přidání nové kolekce */}
                 <div className="mt-6">
@@ -114,6 +136,7 @@ export default function Sidebar() {
                     placeholder="Nová kolekce..."
                     value={newCollectionName}
                     onChange={(e) => setNewCollectionName(e.target.value)}
+                    onKeyDown={handleKeyDown}
                     className="border p-2 w-full text-sm"
                   />
                   <button
@@ -138,6 +161,7 @@ export default function Sidebar() {
                             type="text"
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
+                            onKeyDown={handleEditKeyDown}
                             className="border p-1 text-sm w-2/3"
                           />
                           <div className="flex gap-1">

@@ -13,7 +13,10 @@ export async function GET(req) {
     const { data, error } = await supabase
       .from('tasks')
       .select('*')
-      .eq('collection_id', collectionId);
+      .eq('collection_id', collectionId)
+      .order('important', { ascending: false })
+      .order('due_date', { ascending: true })
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
 

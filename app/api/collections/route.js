@@ -7,7 +7,8 @@ export async function GET() {
     const { data, error } = await supabase
       .from('collections')
       .select('id, name')
-      .eq('user_id', 1);
+      .eq('user_id', 1)
+      .order('created_at', { ascending: true });
 
     if (error) throw error;
 
