@@ -52,7 +52,6 @@ export default function TaskCard({
 
   return (
     <div lang="cs" className={`flex items-center gap-2 shadow-md p-2 bg-white hover:bg-gray-200 w-full ${status ? "opacity-50" : ""}`}>
-      {/* Checkbox má jako JEDINÝ změnu stavu */}
       <input
         type="checkbox"
         className="checkbox checkbox-success checkbox-lg bg-white hover:bg-white active:bg-white w-6 flex-shrink-0"
@@ -68,7 +67,7 @@ export default function TaskCard({
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
             onKeyDown={handleEditKeyDown}
-            className="border p-1 text-sm w-full lg:basis-8/12"
+            className="border rounded-md p-1 md:px-2 text-sm w-full lg:basis-8/12"
           />
         ) : (
           <span className={`${status ? "line-through" : ""} lg:basis-8/12 break-all`}>
@@ -86,8 +85,13 @@ export default function TaskCard({
       <div className="flex justify-end lg:basis-1/12">
         {isEditing && !isMobile ? (
           <>
-            <FiCheck onClick={handleEditSave} className="cursor-pointer text-green-600 mr-2" />
-            <FiX onClick={handleEditCancel} className="cursor-pointer text-red-500" />
+            <button onClick={handleEditSave} className="btn btn-circle md:w-[2rem] md:h-[2rem] bg-inherit hover:bg-gray-300 hover:rotate-12 active:bg-gray-400 p-0">
+              <FiCheck className="cursor-pointer text-green-600 text-lg" />
+            </button>
+
+            <button onClick={handleEditCancel} className="btn btn-circle md:w-[2rem] md:h-[2rem] bg-inherit hover:bg-gray-300 hover:rotate-12 active:bg-gray-400 p-0">
+              <FiX className="cursor-pointer text-red-500 text-lg" />
+            </button>
           </>
         ) : (
           <>

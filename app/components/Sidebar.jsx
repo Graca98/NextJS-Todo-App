@@ -163,7 +163,7 @@ export default function Sidebar() {
                 <div className="mt-6">
                   <input
                     type="text"
-                    placeholder="Nová kolekce..."
+                    placeholder="Název kolekce"
                     value={newCollectionName}
                     onChange={(e) => setNewCollectionName(e.target.value)}
                     onKeyDown={handleKeyDown}
