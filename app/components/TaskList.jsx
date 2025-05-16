@@ -6,6 +6,12 @@ const TaskList = ({
   handleChange,
   handleDelete,
   handleEditBtn,
+  editTaskId,
+  editValue,
+  setEditValue,
+  handleEditSave,
+  handleEditCancel,
+  isMobile,
   setOpenEditModal,
 }) => {
 
@@ -33,6 +39,12 @@ const TaskList = ({
             deleteTask={() => handleDelete(task.id)}
             editTask={() => handleEditBtn(task.id)}
             setOpenEditModal={setOpenEditModal}
+            isEditing={editTaskId === task.id}
+            editValue={editValue}
+            setEditValue={setEditValue}
+            handleEditSave={handleEditSave}
+            handleEditCancel={handleEditCancel}
+            isMobile={isMobile}
           />
         ))}
 
@@ -51,6 +63,12 @@ const TaskList = ({
             deleteTask={() => handleDelete(task.id)}
             editTask={() => handleEditBtn(task.id)}
             setOpenEditModal={setOpenEditModal}
+            isEditing={editTaskId === task.id}
+            editValue={editValue}
+            setEditValue={setEditValue}
+            handleEditSave={handleEditSave}
+            handleEditCancel={handleEditCancel}
+            isMobile={isMobile}
           />
         ))}
     </>

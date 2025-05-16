@@ -3,22 +3,23 @@
 //todo Další úklid kódu
 //todo Opravit filtr podle času
 
-import { useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
-import TaskList from "./TaskList";
-import TaskEditForm from "./TaskEditForm";
-import Sidebar from "./Sidebar";
-import AddTask from "./AddTask";
+import { supabase } from '../../lib/supabaseClient.js';
+import useIsMobile from "../../lib/hooks/useIsMobile.js";
+import TaskList from "./TaskList.jsx";
+import TaskEditForm from "./TaskEditForm.jsx";
+import AddTask from "./AddTask.jsx";
 
 // Icons
 import { IoFilterSharp } from "react-icons/io5";
 import { RxHamburgerMenu } from "react-icons/rx";
 
-export default function TaskPage({taskID}) {
+export default function TaskPage({ taskID, filter }) {
   const [editTaskId, setEditTaskId] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [task, setTask] = useState("");
   const [openTaskModal, setOpenTaskModal] = useState(false);
+  const isMobile = useIsMobile();
   const [openEditModal, setOpenEditModal] = useState(false);
   const [editValue, setEditValue] = useState("");
   const [formState, setFormState] = useState({
@@ -33,23 +34,60 @@ export default function TaskPage({taskID}) {
   // Načte úkoly z mysql database
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch(`/api/tasks?collection_id=${taskID}`);
-      if (!res.ok) throw new Error('Chyba při načítání úkolů');
-      const response = await res.json();
-      setTasks(response ?? []);
-      console.log(response);
+      let queryBuilder = supabase
+        .from('tasks')
+        .select('*, collections(id, user_id)')
+        .order('created_at', { ascending: false });
+  
+      if (filter) {
+        if (filter === 'important') {
+          queryBuilder = queryBuilder.eq('important', true);
+        } else if (filter === 'overdue') {
+          queryBuilder = queryBuilder.lt('due_date', new Date().toISOString()).eq('is_completed', false);
+        } else if (filter === 'today') {
+          const today = new Date().toISOString().split('T')[0];
+          queryBuilder = queryBuilder.eq('due_date', today).eq('is_completed', false);
+        } else if (filter === 'completed') {
+          queryBuilder = queryBuilder.eq('is_completed', true);
+        }
+      } else if (taskID) {
+        queryBuilder = queryBuilder.eq('collection_id', taskID);
+      } else {
+        setTasks([]);
+        return;
+      }
+  
+      // Filtrujeme přes kolekci - user_id 1
+      queryBuilder = queryBuilder.eq('collections.user_id', 1);
+  
+      const { data, error } = await queryBuilder;
+      if (error) throw error;
+  
+      // Supabase vrací objekty s embedded `collections`, pokud připojíš join
+      const filteredTasks = data.filter(task => task.collections?.user_id === 1);
+  
+      setTasks(filteredTasks ?? []);
     } catch (error) {
-      console.error(error);
-      alert(error.message);
+      console.error("Chyba při načítání úkolů:", error);
+      setTasks([]);
     }
-  }, [taskID]);
-
+  }, [taskID, filter]);
+  
   useEffect(() => {
-    fetchData()
-  }, [fetchData])
-
+    fetchData();
+  }, [fetchData]);
+  
+  useEffect(() => {
+    if (isMobile && editTaskId !== null && !openEditModal) {
+      setEditTaskId(null);
+    }
+    if (!isMobile && openEditModal) {
+      setOpenEditModal(false);
+    }
+  }, [isMobile, editTaskId, openEditModal]);
+  
   // Změní status (true/false) tasku při kliknutí na checkbox
-  const handleChange = async (id: number) => {
+  const handleChange = async (id) => {
     try {
       const taskToUpdate = tasks.find(task => task.id === id)
       if (!taskToUpdate) return
@@ -75,7 +113,7 @@ export default function TaskPage({taskID}) {
   };
 
   // Smaže vybraný task
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id) => {
     try {
       const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Chyba při mazání úkolu');
@@ -135,40 +173,64 @@ export default function TaskPage({taskID}) {
   }, [task, taskDate, fetchData, taskID]);
 
   // Po kliknutí na edit button se načte value daného úkolu
-  const handleEditBtn = (id: number) => {
+  const handleEditBtn = (id) => {
+    const task = tasks.find((t) => t.id === id);
+    if (!task) return;
     setEditTaskId(id);
-    tasks.map((task) => {
-      if (task.id === id) {
-        setEditValue(task.name);
-      }
-    });
-  };
-
-  // Vybere veškerý text při kliknutí na edit input
-  const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => event.target.select();
-
-  // Save button v edit modalu
-  const handleEdit = async (id: number) => {
-    try {
-      const res = await fetch(`/api/tasks/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: editValue })
-      });
-      if (!res.ok) throw new Error('Chyba při úpravě úkolu');      
+    setEditValue(task.name);
   
-      // Lokálně upraví úkol
-      const editedTasks = tasks.map((one) =>
-        one.id === id ? { ...one, name: editValue } : one
+    if (isMobile) {
+      setOpenEditModal(true);
+    }
+  };
+  
+
+  const handleEditSave = async () => {
+    try {
+      await supabase.from("tasks").update({ name: editValue }).eq("id", editTaskId);
+      setTasks((prev) =>
+        prev.map((t) => (t.id === editTaskId ? { ...t, name: editValue } : t))
       );
-      setTasks(editedTasks);
+      setEditTaskId(null);
       setEditValue("");
       setOpenEditModal(false);
     } catch (error) {
-      console.error("Chyba při mazání úkolu:", error);
+      console.error(error);
     }
-
   };
+  
+  const handleEditCancel = () => {
+    setEditTaskId(null);
+    setEditValue("");
+    setOpenEditModal(false);
+  };
+
+  // Vybere veškerý text při kliknutí na edit input
+  const handleFocus = (event) => event.target.select();
+  // const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => event.target.select();
+
+  // Save button v edit modalu
+  // const handleEdit = async (id) => {
+  //   try {
+  //     const res = await fetch(`/api/tasks/${id}`, {
+  //       method: 'PATCH',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ name: editValue })
+  //     });
+  //     if (!res.ok) throw new Error('Chyba při úpravě úkolu');      
+  
+  //     // Lokálně upraví úkol
+  //     const editedTasks = tasks.map((one) =>
+  //       one.id === id ? { ...one, name: editValue } : one
+  //     );
+  //     setTasks(editedTasks);
+  //     setEditValue("");
+  //     setOpenEditModal(false);
+  //   } catch (error) {
+  //     console.error("Chyba při mazání úkolu:", error);
+  //   }
+
+  // };
 
   {
     /* =========================== Filters ================================= */
@@ -224,15 +286,26 @@ export default function TaskPage({taskID}) {
           setTaskDate={setTaskDate}
         />
       </div>
+
+      {!filter && !taskID && (
+        <p className="text-gray-500">Vyber kolekci nebo filtr...</p>
+      )}
+
       {/* Seznam úkolů */}
       <div className="flex flex-col gap-3 md:gap-4 pt-2 w-full mb-12">
-        <TaskList
-          tasks={tasks}
-          handleChange={handleChange}
-          handleDelete={handleDelete}
-          handleEditBtn={handleEditBtn}
-          setOpenEditModal={setOpenEditModal}
-        />
+      <TaskList
+        tasks={tasks}
+        handleChange={handleChange}
+        handleDelete={handleDelete}
+        handleEditBtn={handleEditBtn}
+        editTaskId={editTaskId}
+        editValue={editValue}
+        setEditValue={setEditValue}
+        handleEditSave={handleEditSave}
+        handleEditCancel={handleEditCancel}
+        isMobile={isMobile}
+        setOpenEditModal={setOpenEditModal}
+      />
       </div>
 
       {/* Tlačítko "+" na mobilním zobrazení, které ma přidat ukol */}
@@ -254,7 +327,7 @@ export default function TaskPage({taskID}) {
         editValue={editValue}
         setEditValue={setEditValue}
         handleFocus={handleFocus}
-        handleEdit={handleEdit}
+        handleEdit={handleEditSave}
       />
     </div>
   );

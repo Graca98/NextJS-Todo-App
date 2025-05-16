@@ -5,6 +5,7 @@ import Image from "next/image";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { IoFilterSharp } from "react-icons/io5";
 import { FiTrash2, FiEdit2, FiCheck, FiX } from "react-icons/fi";
+import { FaStar, FaClock, FaCalendarDay, FaListAlt, FaCheckCircle } from 'react-icons/fa';
 import TaskPage from "./TaskPage";
 import { useSwipeable } from 'react-swipeable';
 
@@ -17,6 +18,7 @@ export default function Sidebar() {
   const [newCollectionName, setNewCollectionName] = useState("");
   const [editId, setEditId] = useState(null);
   const [editName, setEditName] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState(null);
 
   const fetchCollections = useCallback(async () => {
     try {
@@ -67,6 +69,16 @@ export default function Sidebar() {
     await fetchCollections();
   };
 
+  // TEST
+  const filters = [
+    { id: 'important', name: 'Důležité', icon: <FaStar className="text-yellow-400" /> },
+    { id: 'overdue', name: 'Po splatnosti', icon: <FaClock className="text-red-500" /> },
+    { id: 'today', name: 'Dnes', icon: <FaCalendarDay className="text-blue-500" /> },
+    { id: 'all', name: 'Všechny úkoly', icon: <FaListAlt className="text-gray-500" /> },
+    { id: 'completed', name: 'Dokončené', icon: <FaCheckCircle className="text-green-500" /> },
+  ];
+
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       handleAddCollection();
@@ -86,7 +98,7 @@ export default function Sidebar() {
     }
   };
   
-
+  // Funkce na ovládaní sidebaru swipem
   const handlers = useSwipeable({
     onSwipedRight: () => setOpenSide(true),
     onSwipedLeft: () => setOpenSide(false),
@@ -128,6 +140,24 @@ export default function Sidebar() {
                     />
                   </div>
                 </div> */}
+
+                {/* Filtry */}
+                <h3 className="mt-6 mb-2 text-sm text-gray-600 uppercase">Filtry</h3>
+                <ul className="space-y-2">
+                  {filters.map((filter) => (
+                    <li key={filter.id} className="flex items-center gap-2 cursor-pointer hover:underline" onClick={() => {
+                      setSelectedFilter(filter.id);
+                      setSelectedCollectionId(null);
+                      setSelectedCollectionName(filter.name);
+                    }}>
+                      <span>{filter.icon}</span>
+                      <span>{filter.name}</span>
+                    </li>
+                  ))}
+                </ul>
+
+
+                <div className="divider mt-4" />
 
                 {/* Přidání nové kolekce */}
                 <div className="mt-6">
@@ -181,6 +211,7 @@ export default function Sidebar() {
                             onClick={() => {
                               setSelectedCollectionId(col.id);
                               setSelectedCollectionName(col.name);
+                              setSelectedFilter(null);
                             }}
                             className="cursor-pointer hover:underline w-2/3"
                           >
@@ -192,7 +223,7 @@ export default function Sidebar() {
                                 setEditId(col.id);
                                 setEditName(col.name);
                               }}
-                              className="cursor-pointer"
+                              className="cursor-pointer text-gray-500"
                             />
                             <FiTrash2
                               onClick={() => handleDeleteCollection(col.id)}
@@ -246,10 +277,12 @@ export default function Sidebar() {
             </div>
 
             {/* Tady se zobrazuje TaskPage */}
-            {selectedCollectionId ? (
+            {selectedFilter ? (
+              <TaskPage filter={selectedFilter} />
+            ) : selectedCollectionId ? (
               <TaskPage taskID={selectedCollectionId} />
             ) : (
-              <p>Načítám úkoly...</p>
+              <p>Vyber kolekci nebo filtr...</p>
             )}
           </div>
         </div>
