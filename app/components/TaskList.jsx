@@ -1,4 +1,5 @@
 import TaskCard from "./TaskCard";
+import { FaSquareCheck } from "react-icons/fa6";
 
 const TaskList = ({
   tasks,
@@ -10,9 +11,15 @@ const TaskList = ({
 
   return (
     <>
-      <h2 className="text-xl font-semibold">
-        {tasks.filter((task) => !task.is_completed).length > 0 ? "Seznam úkolů" : ""}
+      <h2 className="text-xl font-semibold flex items-center gap-2">
+        {tasks.filter((task) => !task.is_completed).length > 0 
+          ? "Seznam úkolů" 
+          : <>
+              <span><FaSquareCheck className="text-green-500"/></span> Vše je hotovo. Přidejte nový úkol.
+            </>
+        }
       </h2>
+
 
       {tasks
         .filter((task) => !task.is_completed)

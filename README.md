@@ -1,5 +1,26 @@
 # Todo Appka vytvořená přes NextJS
 
+!!! Předělat !!!
+npm install @supabase/supabase-js
+npm install react-swipeable
+
+
+todo:
+| Návrh                           | Efekt                        | Inspirace            |
+| ------------------------------- | ---------------------------- | -------------------- |
+| Empty states                    | Přehlednost, přívětivost     | Todoist, Things      |
+| Barvy kolekcí, štítky           | Vizuální odlišení            | Trello, Notion       |
+| Drag & Drop                     | Intuitivní přesouvání        | Trello, ClickUp      |
+| Progress kolekcí                | Gamifikace, motivace         | Todoist, Habitica    |
+| Tmavý režim                     | Moderní vzhled, pohodlí očí  | Všude                |
+| Animace, microinteractions      | Prémiový pocit               | Apple Reminders      |
+| Mobile First design             | Lepší použitelnost na mobile | Google Tasks, Notion |
+| Vyhledávání, filtry             | Efektivnější práce           | Asana, Todoist       |
+| Personalizace UI                | Uživatelský komfort          | ClickUp, Notion      |
+| Realtime update (SWR, Supabase) | Moderní UX                   | Trello, Notion       |
+
+
+
 ## Link: https://graca98.github.io/NextJS-Todo-App/
 
 

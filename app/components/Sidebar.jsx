@@ -1,38 +1,41 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import Image from "next/image";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { IoFilterSharp } from "react-icons/io5";
 import { FiTrash2, FiEdit2, FiCheck, FiX } from "react-icons/fi";
 import TaskPage from "./TaskPage";
+import { useSwipeable } from 'react-swipeable';
+
 
 export default function Sidebar() {
   const [openSide, setOpenSide] = useState(false);
   const [collections, setCollections] = useState([]);
   const [selectedCollectionId, setSelectedCollectionId] = useState(null);
+  const [selectedCollectionName, setSelectedCollectionName] = useState("");
   const [newCollectionName, setNewCollectionName] = useState("");
   const [editId, setEditId] = useState(null);
   const [editName, setEditName] = useState("");
 
-  useEffect(() => {
-    const fetchCollections = async () => {
-      try {
-        const res = await fetch("/api/collections");
-        const data = await res.json();
-        setCollections(data);
-        if (data.length > 0) {
-          setSelectedCollectionId(data[0].id);
-        }
-      } catch (error) {
-        console.error("Chyba při načítání kolekcí:", error);
-      }
-    };
-
-    fetchCollections();
+  const fetchCollections = useCallback(async () => {
+    try {
+      const res = await fetch("/api/collections");
+      if (!res.ok) throw new Error('Chyba při načítání kolekcí');
+      const data = await res.json();
+      setCollections(data);
+      if (data.length > 0) setSelectedCollectionId(data[0].id);
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
+    }
   }, []);
-  
 
+  useEffect(() => {
+    fetchCollections();
+  }, [fetchCollections]);
+
+  // Použití i v jiných funkcích:
   const handleAddCollection = async () => {
     if (!newCollectionName.trim()) return;
     await fetch("/api/collections", {
@@ -64,23 +67,20 @@ export default function Sidebar() {
     await fetchCollections();
   };
 
-  const fetchCollections = async () => {
-    try {
-      const res = await fetch("/api/collections");
-      const data = await res.json();
-      setCollections(data);
-    } catch (error) {
-      console.error("Chyba při načítání kolekcí:", error);
-    }
-  };
-
+  const handlers = useSwipeable({
+    onSwipedRight: () => setOpenSide(true),
+    onSwipedLeft: () => setOpenSide(false),
+    delta: 50,
+  });
+  
   return (
     <>
-      <div className="background flex flex-col">
+      <div {...handlers} className="background flex flex-col sm:overflow-hidden">
         <div className="lg:mx-auto flex w-full min-h-dvh">
           {/* Sidebar */}
           <div className="relative z-[90]">
             <div
+              {...handlers}
               tabIndex="0"
               className={`${
                 openSide
@@ -154,7 +154,10 @@ export default function Sidebar() {
                       ) : (
                         <>
                           <span
-                            onClick={() => setSelectedCollectionId(col.id)}
+                            onClick={() => {
+                              setSelectedCollectionId(col.id);
+                              setSelectedCollectionName(col.name);
+                            }}
                             className="cursor-pointer hover:underline w-2/3"
                           >
                             {col.name}
@@ -193,7 +196,7 @@ export default function Sidebar() {
                     className={`${openSide && "hidden"} text-xl`}
                   />
                   <h1 className={`text-xl font-semibold px-2 py-1.5 ${openSide ? "pl-0" : "ml-4"}`}>
-                    Todo App
+                    {selectedCollectionName || "Todo App"}
                   </h1>
                 </div>
                 <div>
