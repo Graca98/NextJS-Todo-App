@@ -1,48 +1,298 @@
 "use client";
-//! Není nikde použito!!
 
+import { useCallback, useState, useEffect } from "react";
+import Image from "next/image";
 import { RxHamburgerMenu } from "react-icons/rx";
+import { IoFilterSharp } from "react-icons/io5";
+import { FiTrash2, FiEdit2, FiCheck, FiX } from "react-icons/fi";
+import { FaStar, FaClock, FaCalendarDay, FaListAlt, FaCheckCircle } from 'react-icons/fa';
+import TaskPage from "./TaskPage";
+import { useSwipeable } from 'react-swipeable';
 
-export default function Sidebar({ openSide, setOpenSide }) {
-  // const [openSide, setOpenSide] = useState(false);
 
+export default function Sidebar() {
+  const [openSide, setOpenSide] = useState(false);
+  const [collections, setCollections] = useState([]);
+  const [selectedCollectionId, setSelectedCollectionId] = useState(null);
+  const [selectedCollectionName, setSelectedCollectionName] = useState("");
+  const [newCollectionName, setNewCollectionName] = useState("");
+  const [editId, setEditId] = useState(null);
+  const [editName, setEditName] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState(null);
+
+  const fetchCollections = useCallback(async () => {
+    try {
+      const res = await fetch("/api/collections");
+      if (!res.ok) throw new Error('Chyba při načítání kolekcí');
+      const data = await res.json();
+      setCollections(data);
+      if (data.length > 0) setSelectedCollectionId(data[0].id);
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCollections();
+  }, [fetchCollections]);
+
+  // Použití i v jiných funkcích:
+  const handleAddCollection = async () => {
+    if (!newCollectionName.trim()) return;
+    await fetch("/api/collections", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newCollectionName.trim() }),
+    });
+    setNewCollectionName("");
+    await fetchCollections();
+  };
+
+  const handleDeleteCollection = async (id) => {
+    if (!confirm("Opravdu chceš smazat kolekci?")) return;
+    await fetch(`/api/collections?id=${id}`, {
+      method: "DELETE",
+    });
+    await fetchCollections();
+  };
+
+  const handleEditCollection = async (id) => {
+    if (!editName.trim()) return;
+    await fetch("/api/collections", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, name: editName.trim() }),
+    });
+    setEditId(null);
+    setEditName("");
+    await fetchCollections();
+  };
+
+  // TEST
+  const filters = [
+    { id: 'important', name: 'Důležité', icon: <FaStar className="text-yellow-400" /> },
+    { id: 'overdue', name: 'Po splatnosti', icon: <FaClock className="text-red-500" /> },
+    { id: 'today', name: 'Dnes', icon: <FaCalendarDay className="text-blue-500" /> },
+    { id: 'all', name: 'Všechny úkoly', icon: <FaListAlt className="text-gray-500" /> },
+    { id: 'completed', name: 'Dokončené', icon: <FaCheckCircle className="text-green-500" /> },
+  ];
+
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleAddCollection();
+    }
+    if (e.key === "Escape") {
+      setNewCollectionName("")
+    }
+  };
+
+  const handleEditKeyDown = (e) => {
+    if (!editId) return;
+    if (e.key === "Enter") {
+      handleEditCollection(editId);
+    }
+    if (e.key === "Escape") {
+      setEditId(null);
+    }
+  };
+  
+  // Funkce na ovládaní sidebaru swipem
+  const handlers = useSwipeable({
+    onSwipedRight: () => setOpenSide(true),
+    onSwipedLeft: () => setOpenSide(false),
+    delta: 50,
+  });
+  
   return (
     <>
-      <div className="relative z-[90]">
-        <div
-          tabIndex="0"
-          className={`${
-            openSide
-              ? "fixed w-full sm:relative sm:w-[200px] lg:w-[290px]"
-              : "hidden"
-          } top-0 z-40 flex h-screen flex-col overflow-y-auto bg-white focus:outline-0 sm:max-w-[290px] duration-500`}
-        >
-          <div className="flex-1 px-4 md:px-6">
-            <div className="flex items-center mb-2 mt-4 h-10">
-              <div className="">
-                <RxHamburgerMenu
-                  onClick={() => setOpenSide(false)}
-                  className={`${!openSide && "hidden"} text-xl`}
-                />
+      <div {...handlers} className="background flex flex-col sm:overflow-hidden">
+        <div className="lg:mx-auto flex w-full min-h-dvh">
+          {/* Sidebar */}
+          <div className="relative z-[90]">
+            <div
+              {...handlers}
+              tabIndex="0"
+              className={`${
+                openSide
+                  ? "fixed w-full sm:relative sm:w-[200px] lg:w-[290px]"
+                  : "hidden"
+              } top-0 z-40 flex flex-col h-full overflow-y-auto bg-white focus:outline-0 sm:max-w-[290px] duration-500`}
+            >
+              <div className="flex-1 px-4 md:px-6">
+                <div className="flex items-center mb-2 mt-4 h-10">
+                  <RxHamburgerMenu
+                    onClick={() => setOpenSide(false)}
+                    className={`${!openSide && "hidden"} text-xl`}
+                  />
+                </div>
+
+                {/*todo User - do budoucna */}
+                {/* <div className="flex items-center">
+                  <h2>User 1</h2>
+                  <div className="border rounded-full p-2 ml-2">
+                    <Image
+                      src="/next.svg"
+                      width={32}
+                      height={32}
+                      alt="user image"
+                    />
+                  </div>
+                </div> */}
+
+                {/* Filtry */}
+                <h3 className="mt-6 mb-2 text-sm text-gray-600 uppercase">Filtry</h3>
+                <ul className="space-y-2">
+                  {filters.map((filter) => (
+                    <li key={filter.id} className="flex items-center gap-2 cursor-pointer hover:underline" onClick={() => {
+                      setSelectedFilter(filter.id);
+                      setSelectedCollectionId(null);
+                      setSelectedCollectionName(filter.name);
+                    }}>
+                      <span>{filter.icon}</span>
+                      <span>{filter.name}</span>
+                    </li>
+                  ))}
+                </ul>
+
+
+                <div className="divider mt-4" />
+
+                {/* Přidání nové kolekce */}
+                <div className="mt-6">
+                  <input
+                    type="text"
+                    placeholder="Název kolekce"
+                    value={newCollectionName}
+                    onChange={(e) => setNewCollectionName(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    className="border p-2 w-full text-sm"
+                  />
+                  <button
+                    onClick={handleAddCollection}
+                    className="bg-blue-500 text-white mt-2 py-2 px-4 rounded text-sm w-full"
+                  >
+                    Přidat kolekci
+                  </button>
+                </div>
+
+                <div className="divider mt-4" />
+
+                <ul className="mt-4 space-y-2">
+                  {collections.map((col) => (
+                    <li
+                      key={col.id}
+                      className="flex items-center justify-between"
+                    >
+                      {editId === col.id ? (
+                        <>
+                          <input
+                            type="text"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            onKeyDown={handleEditKeyDown}
+                            className="border p-1 text-sm w-2/3"
+                          />
+                          <div className="flex gap-1">
+                            <FiCheck
+                              onClick={() => handleEditCollection(col.id)}
+                              className="cursor-pointer text-green-600"
+                            />
+                            <FiX
+                              onClick={() => setEditId(null)}
+                              className="cursor-pointer text-red-500"
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <span
+                            onClick={() => {
+                              setSelectedCollectionId(col.id);
+                              setSelectedCollectionName(col.name);
+                              setSelectedFilter(null);
+                            }}
+                            className="cursor-pointer hover:underline w-2/3"
+                          >
+                            {col.name}
+                          </span>
+                          <div className="flex gap-1">
+                            <FiEdit2
+                              onClick={() => {
+                                setEditId(col.id);
+                                setEditName(col.name);
+                              }}
+                              className="cursor-pointer text-gray-500"
+                            />
+                            <FiTrash2
+                              onClick={() => handleDeleteCollection(col.id)}
+                              className="cursor-pointer text-red-500"
+                            />
+                          </div>
+                        </>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+
               </div>
             </div>
-            <div>Todo...</div>
-            <ul className="mt-4 space-y-1">
-              <li>Link 1</li>
-              <li>Link 2</li>
-              <li>Link 3</li>
-            </ul>
-            <div className="divider"></div>
-            <ul className="mt-4 space-y-1">
-              <li>Link 1</li>
-              <li>Link 2</li>
-              <li>Link 3</li>
-            </ul>
+          </div>
+
+          {/* Vlastní obsah vpravo */}
+          <div className="flex flex-col w-full mx-4 md:mx-6">
+            {/* Titulek */}
+            <div className="flex flex-col mb-8 mt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <RxHamburgerMenu
+                    onClick={() => setOpenSide(true)}
+                    className={`${openSide && "hidden"} text-xl`}
+                  />
+                  <h1 className={`text-xl font-semibold px-2 py-1.5 ${openSide ? "pl-0" : "ml-4"}`}>
+                    {selectedCollectionName || "Todo App"}
+                  </h1>
+                </div>
+                <div>
+                  <div className="dropdown">
+                    <label
+                      className="inline-flex items-center w-fit px-4"
+                      tabIndex={0}
+                    >
+                      <IoFilterSharp className="mr-1 text-lg" />
+                      Filtr
+                    </label>
+                    <div className="dropdown-menu dropdown-menu-bottom-left">
+                      {/* Filtry */}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <span
+                className={`hidden ${openSide ? "pl-2" : "pl-7"} text-xs`}
+              >
+                Zde bude dnešní den, datum
+              </span>
+            </div>
+
+            {/* Tady se zobrazuje TaskPage */}
+            {selectedFilter ? (
+              <TaskPage filter={selectedFilter} />
+            ) : selectedCollectionId ? (
+              <TaskPage taskID={selectedCollectionId} />
+            ) : (
+              <p>Vyber kolekci nebo filtr...</p>
+            )}
           </div>
         </div>
-        {/*<div
-          className={`${openSide ? "fixed" : "hidden"} duration-500 inset-0 z-30 bg-gray-900 bg-opacity-50 dark:bg-opacity-80`}
-        ></div>*/}
+
+        {/* Footer */}
+        <div className="mx-auto w-full max-w-screen-xl gap-6 pt-3 pb-2 md:pt-6 md:pb-4 px-1">
+          <div className="flex flex-col items-center">
+            <p className="text-xs text-gray-600">Aplikaci vytvořil Denis G.</p>
+          </div>
+        </div>
       </div>
     </>
   );

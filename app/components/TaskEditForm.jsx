@@ -1,7 +1,7 @@
 //todo Přidat validaci formuláře - tady není zatím žádná
 
 const TaskEditForm = ({
-  tempID,
+  editTaskId,
   openEditModal,
   setOpenEditModal,
   editValue,
@@ -21,7 +21,7 @@ const TaskEditForm = ({
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
-      handleEdit(tempID);
+      handleEdit(editTaskId);
     }
     if (e.key === "Escape") {
       handleCancelBtn();
@@ -39,7 +39,7 @@ const TaskEditForm = ({
       />
       <div className="modal px-0">
         <label className="modal-overlay" htmlFor="modal-edit"></label>
-        <div className="modal-content flex flex-col w-screen md:w-9/12 max-w-screen-sm gap-5 bg-white mb-40 md:mb-96">
+        <div className="modal-content flex flex-col w-screen md:w-9/12 max-w-screen-sm gap-5 bg-white mb-40 md:mb-96 px-4 md:px-8">
           <div className="form-group">
             <div className="form-field">
               <label className="form-label text-lg text-gray-700">
@@ -52,7 +52,7 @@ const TaskEditForm = ({
                 onKeyDown={handleKeyDown}
                 onChange={(e) => setEditValue(e.target.value)}
                 onFocus={handleFocus}
-                value={editValue}
+                value={editValue ?? ""}
               />
               {/* <label className="form-label">
               <span className="form-label-alt">Neplatný formát</span>
@@ -62,7 +62,7 @@ const TaskEditForm = ({
             <div className="flex gap-3 w-full mx-auto justify-center">
               <label
                 className="btn btn-success w-32"
-                onClick={() => handleEdit(tempID)}
+                onClick={() => handleEdit(editTaskId)}
               >
                 Uložit
               </label>

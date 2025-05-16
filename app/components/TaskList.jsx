@@ -1,62 +1,74 @@
 import TaskCard from "./TaskCard";
+import { FaSquareCheck } from "react-icons/fa6";
 
 const TaskList = ({
   tasks,
   handleChange,
   handleDelete,
   handleEditBtn,
+  editTaskId,
+  editValue,
+  setEditValue,
+  handleEditSave,
+  handleEditCancel,
+  isMobile,
   setOpenEditModal,
 }) => {
-  //todo GET, momentálně problém s client componentou a async/await
-  // const url = "http://localhost:3000/api/Tasks"
-
-  // const getTasks = async () => {
-  //   try {
-  //     const res = await fetch(url, {
-  //       cache: "no-store"
-  //     })
-  //     return res.json()
-  //   } catch(error) {
-  //     console.log("Failed to get tasks", error)
-  //   }
-  // }
 
   return (
     <>
-      <h2 className="text-xl font-semibold">
-        {tasks.filter((task) => !task.status).length > 0 ? "Seznam úkolů" : ""}
+      <h2 className="text-xl font-semibold flex items-center gap-2">
+        {tasks.filter((task) => !task.is_completed).length > 0 
+          ? "Seznam úkolů" 
+          : <>
+              <span><FaSquareCheck className="text-green-500"/></span> Vše je hotovo. Přidejte nový úkol.
+            </>
+        }
       </h2>
 
+
       {tasks
-        .filter((task) => !task.status)
+        .filter((task) => !task.is_completed)
         .map((task) => (
           <TaskCard
             key={task.id}
-            title={task.title}
-            status={task.status}
-            timeToComplete={task.timeToComplete}
+            title={task.name}
+            status={task.is_completed}
+            timeToComplete={task.due_date}
             change={() => handleChange(task.id)}
             deleteTask={() => handleDelete(task.id)}
             editTask={() => handleEditBtn(task.id)}
             setOpenEditModal={setOpenEditModal}
+            isEditing={editTaskId === task.id}
+            editValue={editValue}
+            setEditValue={setEditValue}
+            handleEditSave={handleEditSave}
+            handleEditCancel={handleEditCancel}
+            isMobile={isMobile}
           />
         ))}
 
       <h2 className="text-xl font-semibold mt-8">
-        {tasks.filter((task) => task.status).length > 0 ? "Dokončeno" : ""}
+        {tasks.filter((task) => task.is_completed).length > 0 ? "Dokončeno" : ""}
       </h2>
       {tasks
-        .filter((task) => task.status)
+        .filter((task) => task.is_completed)
         .map((task) => (
           <TaskCard
             key={task.id}
-            title={task.title}
-            status={task.status}
-            timeToComplete={task.timeToComplete}
+            title={task.name}
+            status={task.is_completed}
+            timeToComplete={task.due_date}
             change={() => handleChange(task.id)}
             deleteTask={() => handleDelete(task.id)}
             editTask={() => handleEditBtn(task.id)}
             setOpenEditModal={setOpenEditModal}
+            isEditing={editTaskId === task.id}
+            editValue={editValue}
+            setEditValue={setEditValue}
+            handleEditSave={handleEditSave}
+            handleEditCancel={handleEditCancel}
+            isMobile={isMobile}
           />
         ))}
     </>
