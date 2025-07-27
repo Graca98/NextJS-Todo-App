@@ -17,7 +17,7 @@ const TaskList = ({
 
   return (
     <>
-      <h2 className="text-xl font-semibold flex items-center gap-2">
+      <h2 className="text-xl text-foreground font-semibold flex items-center gap-2 ">
         {tasks.filter((task) => !task.is_completed).length > 0 
           ? "Seznam úkolů" 
           : <>
@@ -48,7 +48,7 @@ const TaskList = ({
           />
         ))}
 
-      <h2 className="text-xl font-semibold mt-8">
+      <h2 className="text-xl text-foreground font-semibold mt-8">
         {tasks.filter((task) => task.is_completed).length > 0 ? "Dokončeno" : ""}
       </h2>
       {tasks

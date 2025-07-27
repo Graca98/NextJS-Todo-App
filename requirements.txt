@@ -3,3 +3,4 @@ next-themes
 shadcn@latest init
 shadcn@latest add button
 shadcn@latest add toast
+shadcn@latest add dropdown-menu

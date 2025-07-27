@@ -214,6 +214,7 @@ export default function TaskPage({ taskID, filter }) {
     await fetchData()
 
     setTask("");
+    setTaskDate("");
     setFormState({
       inputLabel: "",
       spanLabel: "",

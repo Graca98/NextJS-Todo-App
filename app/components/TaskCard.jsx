@@ -4,6 +4,18 @@ import { PiCalendarDots } from "react-icons/pi";
 import { FiTrash2, FiEdit2, FiCheck, FiX } from "react-icons/fi";
 import useIsMobile from "../../lib/hooks/useIsMobile";
 
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
+
 export default function TaskCard({
   title,
   status,
@@ -51,10 +63,10 @@ export default function TaskCard({
   };
 
   return (
-    <div lang="cs" className={`flex items-center gap-2 shadow-md p-2 bg-white hover:bg-gray-200 w-full ${status ? "opacity-50" : ""}`}>
+    <div lang="cs" className={`flex items-center gap-2 shadow-md p-2 bg-background hover:bg-secondary text-foreground w-full ${status ? "opacity-50" : ""}`}>
       <input
         type="checkbox"
-        className="checkbox checkbox-success checkbox-lg bg-white hover:bg-white active:bg-white w-6 flex-shrink-0"
+        className="checkbox checkbox-success checkbox-lg bg-background hover:bg-secondary w-6 flex-shrink-0"
         onChange={change}
         checked={status}
       />
@@ -75,7 +87,7 @@ export default function TaskCard({
           </span>
         )}
 
-        <span className="flex items-center gap-x-3 text-gray-500 text-xs lg:text-sm lg:basis-3/12">
+        <span className="flex items-center gap-x-3 text-gray-400 text-xs lg:text-sm lg:basis-3/12">
           <PiCalendarDots className={`${!timeToComplete && "hidden"}`} />
           {formatCzechDate(timeToComplete)}
         </span>
@@ -85,23 +97,46 @@ export default function TaskCard({
       <div className="flex justify-end lg:basis-1/12">
         {isEditing && !isMobile ? (
           <>
-            <button onClick={handleEditSave} className="btn btn-circle md:w-[2rem] md:h-[2rem] bg-inherit hover:bg-gray-300 hover:rotate-12 active:bg-gray-400 p-0">
+            <button onClick={handleEditSave} className="btn btn-circle md:w-[2rem] md:h-[2rem] bg-inherit hover:rotate-12 p-0">
               <FiCheck className="cursor-pointer text-green-600 text-lg" />
             </button>
 
-            <button onClick={handleEditCancel} className="btn btn-circle md:w-[2rem] md:h-[2rem] bg-inherit hover:bg-gray-300 hover:rotate-12 active:bg-gray-400 p-0">
+            <button onClick={handleEditCancel} className="btn btn-circle md:w-[2rem] md:h-[2rem] bg-inherit hover:rotate-12 p-0">
               <FiX className="cursor-pointer text-red-500 text-lg" />
             </button>
           </>
         ) : (
           <>
-            <button onClick={handleEditClick} className={`${!status ? "" : "invisible"} btn btn-circle md:w-[2rem] md:h-[2rem] bg-inherit hover:bg-gray-300 hover:rotate-12 active:bg-gray-400 p-0`}>
+            <button onClick={handleEditClick} className={`${!status ? "" : "invisible"} btn btn-circle md:w-[2rem] md:h-[2rem] bg-inherit hover:rotate-12 p-0`}>
               <FiEdit2 className="text-gray-500 text-lg" />
             </button>
 
-            <button onClick={handleDeleteClick} className="btn btn-circle md:w-[2rem] md:h-[2rem] bg-inherit hover:bg-gray-300 hover:rotate-12 active:bg-gray-400 p-0">
-              <FiTrash2 className="cursor-pointer text-red-500 text-lg" />
-            </button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button className="btn btn-circle md:w-[2rem] md:h-[2rem] bg-inherit hover:rotate-12 p-0" onClick={e => e.stopPropagation()} aria-label="Smazat úkol">
+                  <FiTrash2 className="cursor-pointer text-red-500 text-lg" />
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-foreground">{`Opravdu chceš smazat úkol "${title}"?`}</AlertDialogTitle>
+                  <AlertDialogDescription className="text-foreground">
+                    Tato akce je nevratná. Úkol bude trvale odstraněn.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="text-foreground">Zrušit</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-red-600 hover:bg-red-700"
+                    onClick={() => {
+                      deleteTask();
+                    }}
+                  >
+                    Smazat
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </>
         )}
       </div>
