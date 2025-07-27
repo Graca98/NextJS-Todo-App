@@ -1,4 +1,4 @@
-
+Budoucí requirements soubor
 next-themes;
 shadcn@latest init;
 shadcn@latest add button;
