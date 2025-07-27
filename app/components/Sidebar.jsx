@@ -9,6 +9,9 @@ import { FaStar, FaClock, FaCalendarDay, FaListAlt, FaCheckCircle } from 'react-
 import TaskPage from "./TaskPage";
 import { useSwipeable } from 'react-swipeable';
 
+import { useToast } from "@/"
+import { Button } from "@/src/components/ui/button"
+
 
 export default function Sidebar() {
   const [openSide, setOpenSide] = useState(false);
@@ -19,6 +22,8 @@ export default function Sidebar() {
   const [editId, setEditId] = useState(null);
   const [editName, setEditName] = useState("");
   const [selectedFilter, setSelectedFilter] = useState(null);
+
+  const { toast } = useToast()
 
   const fetchCollections = useCallback(async () => {
     try {
@@ -158,6 +163,17 @@ export default function Sidebar() {
 
 
                 <div className="divider mt-4" />
+                <Button
+                  onClick={() => {
+                    toast({
+                      title: "Scheduled: Catch up",
+                      description: "Friday, February 10, 2023 at 5:57 PM",
+                    })
+                  }}
+                >
+                  Show Toast
+                </Button>
+
 
                 {/* Přidání nové kolekce */}
                 <div className="mt-6">
