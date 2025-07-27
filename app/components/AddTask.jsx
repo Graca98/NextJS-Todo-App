@@ -53,11 +53,11 @@ const AddTask = ({
     <>
       <label
         htmlFor="addTask"
-        className={`flex justify-start cursor-pointer items-center gap-2 shadow-md p-2 bg-white w-full mb-6`}
+        className={`flex justify-start cursor-pointer items-center gap-2 shadow-md p-2 bg-background text-foreground w-full mb-6`}
       >
         <input
           type="checkbox"
-          className="checkbox checkbox-success checkbox-lg bg-white w-6 flex-shrink-0"
+          className="checkbox checkbox-success checkbox-lg bg-background w-6 flex-shrink-0"
           checked={false}
           readOnly
         />
@@ -67,7 +67,7 @@ const AddTask = ({
               placeholder="Přidat úkol"
               type="text"
               id="addTask"
-              className={`input input-solid max-w-full bg-white text-black px-0 ${formState.inputLabel}`}
+              className={`input input-solid max-w-full bg-background text-foreground px-0 ${formState.inputLabel}`}
               onKeyDown={handleKeyDown}
               onChange={(e) => setTask(e.target.value)}
               value={task}
@@ -85,14 +85,14 @@ const AddTask = ({
             onKeyDown={handleKeyDown}
             id="taskId"
             min={getMinDateToday()}
-            className="max-w-28 lg:basis-3/12 text-gray-500 text-xs lg:text-sm"
+            className="max-w-28 lg:basis-3/12 bg-background text-gray-400 text-xs lg:text-sm"
           ></input>
         </div>
         <div className="flex justify-end lg:basis-1/12">
           <button
             // type="button"
             onClick={handleSubmit}
-            className="btn btn-ghost btn-md px-2"
+            className="btn btn-ghost btn-md px-2 text-foreground"
           >
             Přidat
           </button>

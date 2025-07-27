@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from '../../lib/supabaseClient.js';
+import { useToast } from "@/hooks/use-toast"
 import useIsMobile from "../../lib/hooks/useIsMobile.js";
 import TaskList from "./TaskList.jsx";
 import TaskEditForm from "./TaskEditForm.jsx";
@@ -28,11 +29,13 @@ export default function TaskPage({ taskID, filter }) {
     formText: "",
   });
   const [taskDate, setTaskDate] = useState("");
+  const { toast } = useToast()
   // Sidebar useState
   // const [openSide, setOpenSide] = useState(false);
 
   // Načte úkoly z mysql database
   const fetchData = useCallback(async () => {
+    const start = performance.now();
     try {
       let queryBuilder = supabase
         .from('tasks')
@@ -69,9 +72,16 @@ export default function TaskPage({ taskID, filter }) {
       setTasks(filteredTasks ?? []);
     } catch (error) {
       console.error("Chyba při načítání úkolů:", error);
+      toast({
+        title: "Chyba při načítání úkolů",
+        description: "Nepodařilo se načíst úkoly. Zkus to prosím znovu.",
+        variant: "destructive",
+      })
+      const end = performance.now();
+      console.log(`📦 fetchData trvalo: ${Math.round(end - start)} ms`);
       setTasks([]);
     }
-  }, [taskID, filter]);
+  }, [taskID, filter, toast]);
   
   useEffect(() => {
     fetchData();
@@ -106,8 +116,19 @@ export default function TaskPage({ taskID, filter }) {
       )
   
       setTasks(updatedTasks)
+
+      toast({
+        title: newStatus ? "Úkol dokončen" : "Úkol vrácen zpět",
+        description: `Úkol "${taskToUpdate.name}" byl ${newStatus ? "označen jako hotový" : "označen jako nedokončený"}.`,
+      })
+
     } catch (error) {
       console.error("Chyba při změně stavu úkolu:", error)
+      toast({
+        title: "Chyba",
+        description: "Nepodařilo se aktualizovat stav úkolu.",
+        variant: "destructive",
+      })
     }
 
   };
@@ -121,8 +142,20 @@ export default function TaskPage({ taskID, filter }) {
       // Lokálně vymaže úkol ze stavu
       const newTasks = tasks.filter((task) => task.id !== id);
       setTasks(newTasks);
+
+      toast({
+        title: "Úkol smazán",
+        description: `Úkol byl odstraněn.`,
+        variant: "destructive",
+      })
+
     } catch (error) {
       console.error("Chyba při mazání úkolu:", error);
+      toast({
+        title: "Chyba při mazání",
+        description: "Úkol se nepodařilo odstranit.",
+        variant: "destructive",
+      })
     }
   };
 
@@ -148,6 +181,8 @@ export default function TaskPage({ taskID, filter }) {
       reminder_at: null
     }
 
+    const start = performance.now();
+
     try {
       const res = await fetch('/api/tasks', {
         method: 'POST',
@@ -156,21 +191,37 @@ export default function TaskPage({ taskID, filter }) {
       });
       if (!res.ok) throw new Error('Chyba při přidávání úkolu');
       const result = await res.json();
-      console.log(result);      
+
+      toast({
+        title: "Úkol přidán",
+        description: `Úkol "${newTask.name}" byl přidán.`,
+      })
+
+      console.log("✅ Výsledek z API:", result); 
+
     } catch (error) {
       console.error(error)
+      toast({
+        title: "Chyba při přidání úkolu",
+        description: "Úkol se nepodařilo vytvořit.",
+        variant: "destructive",
+      })
     }
 
-    fetchData()
+    const end = performance.now(); // ⏱️ konec měření
+    console.log(`⏱️ Přidání úkolu (API + fetchData) trvalo: ${Math.round(end - start)} ms`);
+
+    await fetchData()
 
     setTask("");
+    setTaskDate("");
     setFormState({
       inputLabel: "",
       spanLabel: "",
       formText: "",
     });
     setOpenTaskModal(false);
-  }, [task, taskDate, fetchData, taskID]);
+  }, [task, taskDate, fetchData, taskID, toast]);
 
   // Po kliknutí na edit button se načte value daného úkolu
   const handleEditBtn = (id) => {
@@ -194,8 +245,17 @@ export default function TaskPage({ taskID, filter }) {
       setEditTaskId(null);
       setEditValue("");
       setOpenEditModal(false);
+      toast({
+        title: "Úkol upraven",
+        description: `Úkol byl upraven na "${editValue}".`,
+      })
     } catch (error) {
       console.error(error);
+      toast({
+        title: "Chyba při úpravě úkolu",
+        description: "Úkol se nepodařilo upravit.",
+        variant: "destructive",
+      })
     }
   };
   

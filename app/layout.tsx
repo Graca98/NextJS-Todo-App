@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 // import Head from "next/head";
 import "./globals.css";
+import { Toaster } from "@/components/ui/toaster"
+import { ThemeProvider } from "@/lib/theme/theme-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,14 +18,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="cs" className="theme-light light">
+    <html lang="cs" suppressHydrationWarning>
         <link
           rel="icon"
           type="image/png"
           sizes="32x32"
           href="/favicon.ico"
         ></link>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+          {children}
+          <Toaster />
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

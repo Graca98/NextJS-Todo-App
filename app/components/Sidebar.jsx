@@ -8,6 +8,21 @@ import { FiTrash2, FiEdit2, FiCheck, FiX } from "react-icons/fi";
 import { FaStar, FaClock, FaCalendarDay, FaListAlt, FaCheckCircle } from 'react-icons/fa';
 import TaskPage from "./TaskPage";
 import { useSwipeable } from 'react-swipeable';
+import ThemeSwitcher from "@/components/ui/ThemeSwitcher"
+
+import { useToast } from "@/hooks/use-toast"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 
 
 export default function Sidebar() {
@@ -19,6 +34,8 @@ export default function Sidebar() {
   const [editId, setEditId] = useState(null);
   const [editName, setEditName] = useState("");
   const [selectedFilter, setSelectedFilter] = useState(null);
+
+  const { toast } = useToast()
 
   const fetchCollections = useCallback(async () => {
     try {
@@ -37,6 +54,12 @@ export default function Sidebar() {
     fetchCollections();
   }, [fetchCollections]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth >= 1024) {
+      setOpenSide(true);
+    }
+  }, []);
+
   // Použití i v jiných funkcích:
   const handleAddCollection = async () => {
     if (!newCollectionName.trim()) return;
@@ -45,15 +68,23 @@ export default function Sidebar() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: newCollectionName.trim() }),
     });
+    toast({
+      title: "Kolekce přidána",
+      description: `Kolekce "${newCollectionName}" byla úspěšně vytvořena.`,
+    });
     setNewCollectionName("");
     await fetchCollections();
   };
 
   const handleDeleteCollection = async (id) => {
-    if (!confirm("Opravdu chceš smazat kolekci?")) return;
     await fetch(`/api/collections?id=${id}`, {
       method: "DELETE",
     });
+    toast({
+      title: "Kolekce smazána",
+      description: `Kolekce byla odstraněna.`,
+      variant: "destructive",
+    })
     await fetchCollections();
   };
 
@@ -63,6 +94,10 @@ export default function Sidebar() {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, name: editName.trim() }),
+    });
+    toast({
+      title: "Kolekce upravena",
+      description: `Název kolekce byl změněn`
     });
     setEditId(null);
     setEditName("");
@@ -107,7 +142,7 @@ export default function Sidebar() {
   
   return (
     <>
-      <div {...handlers} className="background flex flex-col sm:overflow-hidden">
+      <div {...handlers} className="bg-card flex flex-col sm:overflow-hidden">
         <div className="lg:mx-auto flex w-full min-h-dvh">
           {/* Sidebar */}
           <div className="relative z-[90]">
@@ -118,7 +153,7 @@ export default function Sidebar() {
                 openSide
                   ? "fixed w-full sm:relative sm:w-[200px] lg:w-[290px]"
                   : "hidden"
-              } top-0 z-40 flex flex-col h-full overflow-y-auto bg-white focus:outline-0 sm:max-w-[290px] duration-500`}
+              } top-0 z-40 flex flex-col h-full overflow-y-auto bg-background text-foreground focus:outline-0 sm:max-w-[290px] duration-500`}
             >
               <div className="flex-1 px-4 md:px-6">
                 <div className="flex items-center mb-2 mt-4 h-10">
@@ -142,7 +177,7 @@ export default function Sidebar() {
                 </div> */}
 
                 {/* Filtry */}
-                <h3 className="mt-6 mb-2 text-sm text-gray-600 uppercase">Filtry</h3>
+                <h3 className="mt-6 mb-2 text-sm text-foreground uppercase">Filtry</h3>
                 <ul className="space-y-2">
                   {filters.map((filter) => (
                     <li key={filter.id} className="flex items-center gap-2 cursor-pointer hover:underline" onClick={() => {
@@ -156,9 +191,8 @@ export default function Sidebar() {
                   ))}
                 </ul>
 
-
                 <div className="divider mt-4" />
-
+                
                 {/* Přidání nové kolekce */}
                 <div className="mt-6">
                   <input
@@ -183,7 +217,7 @@ export default function Sidebar() {
                   {collections.map((col) => (
                     <li
                       key={col.id}
-                      className="flex items-center justify-between"
+                      className="flex items-center justify-between p-1"
                     >
                       {editId === col.id ? (
                         <>
@@ -217,7 +251,7 @@ export default function Sidebar() {
                           >
                             {col.name}
                           </span>
-                          <div className="flex gap-1">
+                          <div className="flex gap-2">
                             <FiEdit2
                               onClick={() => {
                                 setEditId(col.id);
@@ -225,10 +259,33 @@ export default function Sidebar() {
                               }}
                               className="cursor-pointer text-gray-500"
                             />
-                            <FiTrash2
-                              onClick={() => handleDeleteCollection(col.id)}
-                              className="cursor-pointer text-red-500"
-                            />
+
+                            {/* Delete button */}
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                              <span className="cursor-pointer text-red-500">
+                                <FiTrash2 title="Smazat kolekci" />
+                              </span>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="text-foreground">{`Opravdu chceš smazat kolekci "${col.name}"?`}</AlertDialogTitle>
+                                  <AlertDialogDescription className="text-foreground">
+                                    Tato akce je nevratná. Všechny úkoly v této kolekci budou nenávratně odstraněny.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel className="text-foreground">Zrušit</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteCollection(col.id)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    Smazat
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+
                           </div>
                         </>
                       )}
@@ -241,7 +298,7 @@ export default function Sidebar() {
           </div>
 
           {/* Vlastní obsah vpravo */}
-          <div className="flex flex-col w-full mx-4 md:mx-6">
+          <div className="flex flex-col w-full mx-4 md:mx-6 text-foreground">
             {/* Titulek */}
             <div className="flex flex-col mb-8 mt-4">
               <div className="flex items-center justify-between">
@@ -250,12 +307,15 @@ export default function Sidebar() {
                     onClick={() => setOpenSide(true)}
                     className={`${openSide && "hidden"} text-xl`}
                   />
-                  <h1 className={`text-xl font-semibold px-2 py-1.5 ${openSide ? "pl-0" : "ml-4"}`}>
+                  <h1 className={`text-2xl text-foreground font-semibold px-2 py-1.5 ${openSide ? "pl-0" : "ml-4"}`}>
                     {selectedCollectionName || "Todo App"}
                   </h1>
                 </div>
                 <div>
-                  <div className="dropdown">
+                  <div className="hidden md:inline-flex ">
+                    <ThemeSwitcher className=""/> 
+                  </div>
+                  {/* <div className="dropdown">
                     <label
                       className="inline-flex items-center w-fit px-4"
                       tabIndex={0}
@@ -264,9 +324,8 @@ export default function Sidebar() {
                       Filtr
                     </label>
                     <div className="dropdown-menu dropdown-menu-bottom-left">
-                      {/* Filtry */}
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
               <span
@@ -284,15 +343,16 @@ export default function Sidebar() {
             ) : (
               <p>Vyber kolekci nebo filtr...</p>
             )}
+            
+            {/* Footer */}
+            {/* <div className="mx-auto w-full max-w-screen-xl gap-6 pt-4 pb-2 md:pt-16 md:pb-4 px-1">
+              <div className="flex flex-col items-center">
+                <p className="text-xs text-gray-400">Aplikaci vytvořil Denis G.</p>
+              </div>
+            </div> */}
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="mx-auto w-full max-w-screen-xl gap-6 pt-3 pb-2 md:pt-6 md:pb-4 px-1">
-          <div className="flex flex-col items-center">
-            <p className="text-xs text-gray-600">Aplikaci vytvořil Denis G.</p>
-          </div>
-        </div>
       </div>
     </>
   );
