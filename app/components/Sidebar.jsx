@@ -9,8 +9,19 @@ import { FaStar, FaClock, FaCalendarDay, FaListAlt, FaCheckCircle } from 'react-
 import TaskPage from "./TaskPage";
 import { useSwipeable } from 'react-swipeable';
 
-import { useToast } from "@/"
-import { Button } from "@/src/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 
 
 export default function Sidebar() {
@@ -42,6 +53,12 @@ export default function Sidebar() {
     fetchCollections();
   }, [fetchCollections]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth >= 1024) {
+      setOpenSide(true);
+    }
+  }, []);
+
   // Použití i v jiných funkcích:
   const handleAddCollection = async () => {
     if (!newCollectionName.trim()) return;
@@ -50,15 +67,23 @@ export default function Sidebar() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: newCollectionName.trim() }),
     });
+    toast({
+      title: "Kolekce přidána",
+      description: `Kolekce "${newCollectionName}" byla úspěšně vytvořena.`,
+    });
     setNewCollectionName("");
     await fetchCollections();
   };
 
   const handleDeleteCollection = async (id) => {
-    if (!confirm("Opravdu chceš smazat kolekci?")) return;
     await fetch(`/api/collections?id=${id}`, {
       method: "DELETE",
     });
+    toast({
+      title: "Kolekce smazána",
+      description: `Kolekce byla odstraněna.`,
+      variant: "destructive",
+    })
     await fetchCollections();
   };
 
@@ -68,6 +93,10 @@ export default function Sidebar() {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, name: editName.trim() }),
+    });
+    toast({
+      title: "Kolekce upravena",
+      description: `Název kolekce byl změněn`
     });
     setEditId(null);
     setEditName("");
@@ -161,20 +190,8 @@ export default function Sidebar() {
                   ))}
                 </ul>
 
-
                 <div className="divider mt-4" />
-                <Button
-                  onClick={() => {
-                    toast({
-                      title: "Scheduled: Catch up",
-                      description: "Friday, February 10, 2023 at 5:57 PM",
-                    })
-                  }}
-                >
-                  Show Toast
-                </Button>
-
-
+                
                 {/* Přidání nové kolekce */}
                 <div className="mt-6">
                   <input
@@ -233,7 +250,7 @@ export default function Sidebar() {
                           >
                             {col.name}
                           </span>
-                          <div className="flex gap-1">
+                          <div className="flex gap-2">
                             <FiEdit2
                               onClick={() => {
                                 setEditId(col.id);
@@ -241,10 +258,33 @@ export default function Sidebar() {
                               }}
                               className="cursor-pointer text-gray-500"
                             />
-                            <FiTrash2
-                              onClick={() => handleDeleteCollection(col.id)}
-                              className="cursor-pointer text-red-500"
-                            />
+
+                            {/* Delete button */}
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                              <span className="cursor-pointer text-red-500">
+                                <FiTrash2 title="Smazat kolekci" />
+                              </span>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>{`Opravdu chceš smazat kolekci "${col.name}"?`}</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Tato akce je nevratná. Všechny úkoly v této kolekci budou nenávratně odstraněny.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Zrušit</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteCollection(col.id)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    Smazat
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+
                           </div>
                         </>
                       )}
