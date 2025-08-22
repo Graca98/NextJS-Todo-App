@@ -139,6 +139,13 @@ export default function Sidebar() {
     onSwipedLeft: () => setOpenSide(false),
     delta: 50,
   });
+
+  const closeOnMobile = () => {
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches) {
+      setOpenSide(false);
+    }
+  };
+  
   
   return (
     <>
@@ -155,7 +162,7 @@ export default function Sidebar() {
                   : "hidden"
               } top-0 z-40 flex flex-col h-full overflow-y-auto bg-background text-foreground focus:outline-0 sm:max-w-[290px] duration-500`}
             >
-              <div className="flex-1 px-4 md:px-6">
+              <div className="flex-1 px-4 md:px-6 pb-6">
                 <div className="flex items-center mb-2 mt-4 h-10">
                   <RxHamburgerMenu
                     onClick={() => setOpenSide(false)}
@@ -184,6 +191,7 @@ export default function Sidebar() {
                       setSelectedFilter(filter.id);
                       setSelectedCollectionId(null);
                       setSelectedCollectionName(filter.name);
+                      closeOnMobile();
                     }}>
                       <span>{filter.icon}</span>
                       <span>{filter.name}</span>
@@ -246,6 +254,7 @@ export default function Sidebar() {
                               setSelectedCollectionId(col.id);
                               setSelectedCollectionName(col.name);
                               setSelectedFilter(null);
+                              closeOnMobile();
                             }}
                             className="cursor-pointer hover:underline w-2/3"
                           >
@@ -312,7 +321,8 @@ export default function Sidebar() {
                   </h1>
                 </div>
                 <div>
-                  <div className="hidden md:inline-flex ">
+                  {/* <div className="hidden md:inline-flex "> */}
+                  <div className="inline-flex ">
                     <ThemeSwitcher className=""/> 
                   </div>
                   {/* <div className="dropdown">
