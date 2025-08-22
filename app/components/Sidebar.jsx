@@ -5,11 +5,14 @@ import Image from "next/image";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { IoFilterSharp } from "react-icons/io5";
 import { FiTrash2, FiEdit2, FiCheck, FiX } from "react-icons/fi";
+import { FiPlus } from "react-icons/fi"
 import { FaStar, FaClock, FaCalendarDay, FaListAlt, FaCheckCircle } from 'react-icons/fa';
 import TaskPage from "./TaskPage";
 import { useSwipeable } from 'react-swipeable';
 import ThemeSwitcher from "@/components/ui/ThemeSwitcher"
 
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import {
   AlertDialog,
@@ -34,9 +37,24 @@ export default function Sidebar() {
   const [editId, setEditId] = useState(null);
   const [editName, setEditName] = useState("");
   const [selectedFilter, setSelectedFilter] = useState(null);
+  const [editMode, setEditMode] = useState(false);      // globální „režim úprav“
+  const [taskCounts, setTaskCounts] = useState({});     // { [collectionId]: number }
 
   const { toast } = useToast()
 
+  const fetchTaskCounts = useCallback(async () => {
+    try {
+      const res = await fetch('/api/tasks/counts?status=open')
+      if (!res.ok) throw new Error('Nepodařilo se načíst počty')
+      const map = await res.json()  // { [collectionId]: number }
+      setTaskCounts(map)
+    } catch (e) {
+      console.error(e)
+      setTaskCounts({})
+    }
+  }, [])
+  
+  // fetchCollections – volá agregovaný endpoint
   const fetchCollections = useCallback(async () => {
     try {
       const res = await fetch("/api/collections");
@@ -44,11 +62,13 @@ export default function Sidebar() {
       const data = await res.json();
       setCollections(data);
       if (data.length > 0) setSelectedCollectionId(data[0].id);
+  
+      await fetchTaskCounts(); 
     } catch (error) {
       console.error(error);
       alert(error.message);
     }
-  }, []);
+  }, [fetchTaskCounts]);
 
   useEffect(() => {
     fetchCollections();
@@ -59,6 +79,10 @@ export default function Sidebar() {
       setOpenSide(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (!openSide) setEditMode(false);
+  }, [openSide]);
 
   // Použití i v jiných funkcích:
   const handleAddCollection = async () => {
@@ -203,104 +227,162 @@ export default function Sidebar() {
                 
                 {/* Přidání nové kolekce */}
                 <div className="mt-6">
-                  <input
-                    type="text"
-                    placeholder="Název kolekce"
-                    value={newCollectionName}
-                    onChange={(e) => setNewCollectionName(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    className="border p-2 w-full text-sm"
-                  />
-                  <button
-                    onClick={handleAddCollection}
-                    className="bg-blue-500 text-white mt-2 py-2 px-4 rounded text-sm w-full"
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      handleAddCollection()
+                    }}
+                    className="flex w-full items-center"
                   >
-                    Přidat kolekci
+                    <Input
+                      type="text"
+                      placeholder="Název kolekce"
+                      value={newCollectionName}
+                      onChange={(e) => setNewCollectionName(e.target.value)}
+                      // pokud chceš nech klidně i svůj handleKeyDown
+                      onKeyDown={handleKeyDown}
+                      className="rounded-r-none text-muted-foreground text-sm"
+                    />
+                    <Button
+                      type="submit"
+                      size="icon"
+                      variant="outline"
+                      className="rounded-l-none border-l-0"
+                      disabled={!newCollectionName.trim()}
+                      title="Přidat kolekci"
+                      aria-label="Přidat kolekci"
+                    >
+                      <FiPlus className="h-4 w-4" />
+                    </Button>
+                  </form>
+                </div>
+
+
+                {/* <div className="divider mt-4" /> */}
+                
+                <div className="grid grid-cols-[1fr,3ch] items-center mt-6 px-1">
+                  <h3 className="text-sm text-foreground uppercase">Kolekce</h3>
+                  <button
+                    onClick={() => setEditMode(v => !v)}
+                    className="h-6 justify-self-stretch flex items-center justify-center"  // ← vyplní 3ch a centrování
+                    title={editMode ? "Dokončit úpravy" : "Upravit kolekce"}
+                  >
+                    {editMode ? <FiCheck className="text-green-600" /> : <FiEdit2 className="text-gray-500" />}
                   </button>
                 </div>
 
-                <div className="divider mt-4" />
 
-                <ul className="mt-4 space-y-2">
-                  {collections.map((col) => (
-                    <li
-                      key={col.id}
-                      className="flex items-center justify-between p-1"
-                    >
-                      {editId === col.id ? (
-                        <>
-                          <input
-                            type="text"
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            onKeyDown={handleEditKeyDown}
-                            className="border p-1 text-sm w-2/3"
-                          />
-                          <div className="flex gap-1">
-                            <FiCheck
-                              onClick={() => handleEditCollection(col.id)}
-                              className="cursor-pointer text-green-600"
+                <ul className="mt-2 space-y-2">
+                  {collections.map((col) => {
+                    const isRenaming = editId === col.id;
+
+                    return (
+                      <li
+                        key={col.id}
+                        className={`${
+                          (editMode || isRenaming)
+                            ? "grid grid-cols-[1fr,auto]"
+                            : "grid grid-cols-[1fr,3ch]"
+                        } items-center ps-2 pe-1 py-3 md:py-1 shadow-md md:shadow-none`}
+                      >
+                        {isRenaming ? (
+                          <>
+                            {/* přejmenování kolekce */}
+                            <input
+                              type="text"
+                              value={editName}
+                              onChange={(e) => setEditName(e.target.value)}
+                              onKeyDown={handleEditKeyDown}
+                              className="border p-1 text-sm"
                             />
-                            <FiX
-                              onClick={() => setEditId(null)}
-                              className="cursor-pointer text-red-500"
-                            />
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <span
-                            onClick={() => {
-                              setSelectedCollectionId(col.id);
-                              setSelectedCollectionName(col.name);
-                              setSelectedFilter(null);
-                              closeOnMobile();
-                            }}
-                            className="cursor-pointer hover:underline w-2/3"
-                          >
-                            {col.name}
-                          </span>
-                          <div className="flex gap-2">
-                            <FiEdit2
+                            <div className="justify-self-end flex gap-2">
+                              <FiCheck
+                                onClick={() => handleEditCollection(col.id)}
+                                className="cursor-pointer text-green-600"
+                                title="Uložit"
+                              />
+                              <FiX
+                                onClick={() => setEditId(null)}
+                                className="cursor-pointer text-red-500"
+                                title="Zrušit"
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            {/* název kolekce */}
+                            <span
                               onClick={() => {
-                                setEditId(col.id);
-                                setEditName(col.name);
+                                setSelectedCollectionId(col.id);
+                                setSelectedCollectionName(col.name);
+                                setSelectedFilter(null);
+                                closeOnMobile();
                               }}
-                              className="cursor-pointer text-gray-500"
-                            />
+                              className="cursor-pointer hover:underline"
+                            >
+                              {col.name}
+                            </span>
 
-                            {/* Delete button */}
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                              <span className="cursor-pointer text-red-500">
-                                <FiTrash2 title="Smazat kolekci" />
+                            {/* pravý sloupec: buď ikony (edit mode), nebo číslo */}
+                            {editMode ? (
+                              <div className="justify-self-end flex items-center gap-2">
+                                <FiEdit2
+                                  onClick={() => {
+                                    setEditId(col.id);
+                                    setEditName(col.name);
+                                  }}
+                                  className="cursor-pointer text-gray-500"
+                                  title="Přejmenovat kolekci"
+                                />
+
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <span
+                                      className="cursor-pointer text-red-500"
+                                      title="Smazat kolekci"
+                                    >
+                                      <FiTrash2 />
+                                    </span>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle className="text-foreground">
+                                        {`Opravdu chceš smazat kolekci "${col.name}"?`}
+                                      </AlertDialogTitle>
+                                      <AlertDialogDescription className="text-foreground">
+                                        Tato akce je nevratná. Všechny úkoly v této kolekci budou nenávratně odstraněny.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel className="text-foreground">
+                                        Zrušit
+                                      </AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => handleDeleteCollection(col.id)}
+                                        className="bg-red-600 hover:bg-red-700"
+                                      >
+                                        Smazat
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
+                            ) : (
+                              <span
+                                className="justify-self-stretch text-center text-xs tabular-nums text-muted-foreground leading-none" // ← plná šířka buňky + center
+                                title="Počet otevřených úkolů"
+                              >
+                                {taskCounts[col.id] ?? 0}
                               </span>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle className="text-foreground">{`Opravdu chceš smazat kolekci "${col.name}"?`}</AlertDialogTitle>
-                                  <AlertDialogDescription className="text-foreground">
-                                    Tato akce je nevratná. Všechny úkoly v této kolekci budou nenávratně odstraněny.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel className="text-foreground">Zrušit</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDeleteCollection(col.id)}
-                                    className="bg-red-600 hover:bg-red-700"
-                                  >
-                                    Smazat
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-
-                          </div>
-                        </>
-                      )}
-                    </li>
-                  ))}
+                            )}
+                          </>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
+
+
 
               </div>
             </div>
