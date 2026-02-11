@@ -4,6 +4,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "@/lib/theme/theme-provider";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/AppSidebar"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,7 +34,11 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-          {children}
+          <SidebarProvider>
+            <AppSidebar />
+              <SidebarTrigger />
+              {children}
+          </SidebarProvider>
           <Toaster />
         </ThemeProvider>
       </body>
