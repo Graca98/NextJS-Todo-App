@@ -7,9 +7,9 @@ import { IoFilterSharp } from "react-icons/io5";
 import { FiTrash2, FiEdit2, FiCheck, FiX, FiFolder } from "react-icons/fi";
 import { FiPlus } from "react-icons/fi"
 import { FaStar, FaClock, FaCalendarDay, FaListAlt, FaCheckCircle } from 'react-icons/fa';
-import TaskPage from "./TaskPage";
+// import TaskPage from "./TaskPage";
 import { useSwipeable } from 'react-swipeable';
-import ThemeSwitcher from "@/components/ui/ThemeSwitcher"
+// import ThemeSwitcher from "@/components/ui/ThemeSwitcher"
 import { useSidebar, Sidebar, SidebarHeader, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarGroupAction, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarSeparator} from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,9 +26,24 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
+interface SidebarProps {
+    selectedFilter: any
+    setSelectedFilter: React.Dispatch<any>
+    selectedCollectionId: any
+    setSelectedCollectionId: React.Dispatch<any>
+    selectedCollectionName: any
+    setSelectedCollectionName: React.Dispatch<any>
+  }
 
 
-export default function SidebarComponent() {
+export default function SidebarComponent({
+  selectedFilter,
+  setSelectedFilter,
+  selectedCollectionId,
+  setSelectedCollectionId,
+  selectedCollectionName,
+  setSelectedCollectionName
+}: SidebarProps) {
   const {
     state,
     open,
@@ -40,12 +55,12 @@ export default function SidebarComponent() {
   } = useSidebar()
   const [openSide, setOpenSide] = useState(false);
   const [collections, setCollections] = useState([]);
-  const [selectedCollectionId, setSelectedCollectionId] = useState(null);
-  const [selectedCollectionName, setSelectedCollectionName] = useState("");
+  // const [selectedCollectionId, setSelectedCollectionId] = useState(null);
+  // const [selectedCollectionName, setSelectedCollectionName] = useState("");
   const [newCollectionName, setNewCollectionName] = useState("");
   const [editId, setEditId] = useState(null);
   const [editName, setEditName] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState(null);
+  // const [selectedFilter, setSelectedFilter] = useState(null);
   const [editMode, setEditMode] = useState(false);      // globální „režim úprav“
   const [taskCounts, setTaskCounts] = useState({});     // { [collectionId]: number }
   const [showingAddInput, setShowingAddInput] = useState(false);
@@ -86,15 +101,10 @@ export default function SidebarComponent() {
     fetchCollections();
   }, [fetchCollections]);
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.innerWidth >= 1024) {
-      setOpenSide(true);
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (!openSide) setEditMode(false);
+  // }, [openSide]);
 
-  useEffect(() => {
-    if (!openSide) setEditMode(false);
-  }, [openSide]);
 
   // Použití i v jiných funkcích:
   const handleAddCollection = async () => {
@@ -170,11 +180,11 @@ export default function SidebarComponent() {
   };
   
   // Funkce na ovládaní sidebaru swipem
-  const handlers = useSwipeable({
-    onSwipedRight: () => setOpenSide(true),
-    onSwipedLeft: () => setOpenSide(false),
-    delta: 50,
-  });
+  // const handlers = useSwipeable({
+  //   onSwipedRight: () => setOpenSide(true),
+  //   onSwipedLeft: () => setOpenSide(false),
+  //   delta: 50,
+  // });
 
   const closeOnMobile = () => {
     if (typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches) {
@@ -185,7 +195,8 @@ export default function SidebarComponent() {
   
   return (
     <>
-      <div {...handlers} className="bg-card flex flex-col sm:overflow-hidden">
+      {/* <div {...handlers} className="bg-card flex flex-col sm:overflow-hidden"> */}
+      <div className="bg-card flex flex-col sm:overflow-hidden">
         <div className="lg:mx-auto flex w-full min-h-dvh">
           {/* Sidebar */}
 
@@ -416,13 +427,15 @@ export default function SidebarComponent() {
             </Sidebar>
           
           {/* Tady se zobrazuje TaskPage */}
-            {selectedFilter ? (
-              <TaskPage filter={selectedFilter} />
-            ) : selectedCollectionId ? (
-              <TaskPage taskID={selectedCollectionId} />
-            ) : (
-              <p>Vyber kolekci nebo filtr...</p>
-            )}
+            {/* <div className="flex-1">
+              {selectedFilter ? (
+                <TaskPage filter={selectedFilter} />
+              ) : selectedCollectionId ? (
+                <TaskPage taskID={selectedCollectionId} />
+              ) : (
+                <p>Vyber kolekci nebo filtr...</p>
+              )}
+            </div> */}
             
             {/* Footer */}
             {/* <div className="mx-auto w-full max-w-screen-xl gap-6 pt-4 pb-2 md:pt-16 md:pb-4 px-1">

@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 // import Head from "next/head";
 import "./globals.css";
+import Sidebar from "./components/Sidebar";
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "@/lib/theme/theme-provider";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import AppShell from "@/app/components/AppShell"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -33,9 +35,8 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-          <SidebarProvider>
-              <SidebarTrigger />
-              {children}
+          <SidebarProvider defaultOpen={false}>
+            {children}
           </SidebarProvider>
           <Toaster />
         </ThemeProvider>
