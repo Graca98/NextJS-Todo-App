@@ -20,14 +20,17 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "paths": {
+        "@/*": ["./*"]
+    },
   },
   "include": [
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "app/api/collections/route.js", "app/components/TaskPage.jsx"  ],
   "exclude": [
     "node_modules"
   ]

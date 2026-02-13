@@ -1,8 +1,10 @@
-"use client";
-import Image from "next/image";
-import { useEffect } from "react";
-import TaskPage from "./components/TaskPage";
+import { Suspense } from "react"
+import HomeClient from "@/app/HomeClient"
 
-export default function Home() {
-  return <TaskPage />;
+export default function Page() {
+  return (
+    <Suspense fallback={<div />}>
+      <HomeClient />
+    </Suspense>
+  )
 }
