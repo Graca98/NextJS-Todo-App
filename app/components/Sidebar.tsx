@@ -330,92 +330,92 @@ export default function SidebarComponent({
 
                       return (
                         <SidebarMenuItem key={col.id}>
-  <div className="flex items-center justify-between w-full px-2 py-2">
+                          <div className="flex items-center justify-between w-full px-2 py-2">
 
-    {/* LEVÁ ČÁST */}
-    <div
-      onClick={() => {
-        setSelectedCollectionId(col.id)
-        setSelectedFilter(null)
-      }}
-      className="flex items-center gap-2 flex-1 cursor-pointer"
-    >
-      <FiFolder className="size-4 shrink-0 text-muted-foreground" />
+                            {/* LEVÁ ČÁST */}
+                            <div
+                              onClick={() => {
+                                setSelectedCollectionId(col.id)
+                                setSelectedFilter(null)
+                              }}
+                              className="flex items-center gap-2 flex-1 cursor-pointer"
+                            >
+                              <FiFolder className="size-4 shrink-0 text-muted-foreground" />
 
-      {isRenaming ? (
-        <input
-          autoFocus
-          value={editName}
-          onChange={(e) => setEditName(e.target.value)}
-          onKeyDown={handleEditKeyDown}
-          className="bg-transparent outline-none text-sm w-full"
-        />
-      ) : (
-        <span className="truncate text-sm">
-          {col.name}
-        </span>
-      )}
-    </div>
+                              {isRenaming ? (
+                                <input
+                                  autoFocus
+                                  value={editName}
+                                  onChange={(e) => setEditName(e.target.value)}
+                                  onKeyDown={handleEditKeyDown}
+                                  className="bg-transparent outline-none text-sm w-full"
+                                />
+                              ) : (
+                                <span className="truncate text-sm">
+                                  {col.name}
+                                </span>
+                              )}
+                            </div>
 
-    {/* PRAVÁ ČÁST — VŽDY STEJNÁ ŠÍŘKA */}
-    <div className="flex items-center gap-2 shrink-0 min-w-[48px] justify-end">
+                            {/* PRAVÁ ČÁST — VŽDY STEJNÁ ŠÍŘKA */}
+                            <div className="flex items-center gap-2 shrink-0 min-w-[48px] justify-end">
 
-      {isRenaming ? (
-        <>
-          <FiCheck
-            onClick={() => handleEditCollection(col.id)}
-            className="cursor-pointer text-green-500 hover:opacity-70"
-          />
-          <FiX
-            onClick={() => setEditId(null)}
-            className="cursor-pointer text-red-500 hover:opacity-70"
-          />
-        </>
-      ) : !editMode ? (
-        <span className="text-xs text-muted-foreground tabular-nums">
-          {taskCounts[col.id] ?? 0}
-        </span>
-      ) : (
-        <>
-          <FiEdit2
-            onClick={() => {
-              setEditId(col.id)
-              setEditName(col.name)
-            }}
-            className="cursor-pointer text-muted-foreground hover:text-foreground"
-          />
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <button className="text-muted-foreground hover:text-destructive">
-                <FiTrash2 />
-              </button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>
-                  Smazat kolekci "{col.name}"?
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  Tato akce je nevratná.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Zrušit</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => handleDeleteCollection(col.id)}
-                  className="bg-destructive hover:bg-destructive/90"
-                >
-                  Smazat
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </>
-      )}
+                              {isRenaming ? (
+                                <>
+                                  <FiCheck
+                                    onClick={() => handleEditCollection(col.id)}
+                                    className="cursor-pointer text-green-500 hover:opacity-70"
+                                  />
+                                  <FiX
+                                    onClick={() => setEditId(null)}
+                                    className="cursor-pointer text-red-500 hover:opacity-70"
+                                  />
+                                </>
+                              ) : !editMode ? (
+                                <span className="text-xs text-muted-foreground tabular-nums">
+                                  {taskCounts[col.id] ?? 0}
+                                </span>
+                              ) : (
+                                <>
+                                  <FiEdit2
+                                    onClick={() => {
+                                      setEditId(col.id)
+                                      setEditName(col.name)
+                                    }}
+                                    className="cursor-pointer text-muted-foreground hover:text-foreground"
+                                  />
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <button className="text-muted-foreground hover:text-destructive">
+                                        <FiTrash2 />
+                                      </button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>
+                                          Smazat kolekci &quot;{col.name}&quot;?
+                                        </AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Tato akce je nevratná.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Zrušit</AlertDialogCancel>
+                                        <AlertDialogAction
+                                          onClick={() => handleDeleteCollection(col.id)}
+                                          className="bg-destructive hover:bg-destructive/90"
+                                        >
+                                          Smazat
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </>
+                              )}
 
-    </div>
-  </div>
-</SidebarMenuItem>
+                            </div>
+                          </div>
+                        </SidebarMenuItem>
 
 
 
