@@ -1,29 +1,43 @@
-'use client'
+"use client";
 
-import { useTheme } from 'next-themes'
-import { Moon, Sun } from 'lucide-react'
+import { useTheme } from "next-themes";
+import { Moon, Sun } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
+} from "@/components/ui/tooltip";
 
 export default function ThemeSwitcher() {
-  const { theme, setTheme } = useTheme()
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
-  const isDark = theme === 'dark'
-  const tooltipText = isDark ? 'Přepnout na světlý režim' : 'Přepnout na tmavý režim'
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  const isDark = resolvedTheme === "dark";
+  const tooltipText = isDark
+    ? "Přepnout na světlý režim"
+    : "Přepnout na tmavý režim";
 
   return (
     <TooltipProvider delayDuration={100}>
       <Tooltip>
         <TooltipTrigger asChild>
           <button
-            onClick={() => setTheme(isDark ? 'light' : 'dark')}
+            onClick={() => setTheme(isDark ? "light" : "dark")}
             className="p-2 rounded hover:bg-muted transition"
           >
-            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            {isDark ? (
+              <Sun className="w-5 h-5" />
+            ) : (
+              <Moon className="w-5 h-5" />
+            )}
           </button>
         </TooltipTrigger>
         <TooltipContent side="top" className="text-sm">
@@ -31,5 +45,5 @@ export default function ThemeSwitcher() {
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  )
+  );
 }

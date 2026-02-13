@@ -15,13 +15,15 @@ import AddTask from "./AddTask.jsx";
 import { IoFilterSharp } from "react-icons/io5";
 import { RxHamburgerMenu } from "react-icons/rx";
 
-export default function TaskPage({ taskID, filter }) {
+export default function TaskPage({ taskID, filter, isLoadingCollections }) {
   const [editTaskId, setEditTaskId] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [task, setTask] = useState("");
   const [openTaskModal, setOpenTaskModal] = useState(false);
   const isMobile = useIsMobile();
   const [openEditModal, setOpenEditModal] = useState(false);
+  // Skeleton
+  const [isLoadingTasks, setIsLoadingTasks] = useState(true);
   const [editValue, setEditValue] = useState("");
   const [formState, setFormState] = useState({
     inputLabel: "",
@@ -35,6 +37,8 @@ export default function TaskPage({ taskID, filter }) {
 
   // Načte úkoly z mysql database
   const fetchData = useCallback(async () => {
+    setIsLoadingTasks(true);
+
     const start = performance.now();
     try {
       let queryBuilder = supabase
@@ -80,6 +84,8 @@ export default function TaskPage({ taskID, filter }) {
       const end = performance.now();
       console.log(`📦 fetchData trvalo: ${Math.round(end - start)} ms`);
       setTasks([]);
+    } finally {
+      setIsLoadingTasks(false);
     }
   }, [taskID, filter, toast]);
   
@@ -347,9 +353,10 @@ export default function TaskPage({ taskID, filter }) {
         />
       </div>
 
-      {!filter && !taskID && (
-        <p className="text-gray-500">Vyber kolekci nebo filtr...</p>
+      {!isLoadingCollections && !isLoadingTasks && !filter && !taskID && (
+        <p>Vyber kolekci nebo filtr...</p>
       )}
+
 
       {/* Seznam úkolů */}
       <div className="flex flex-col gap-3 md:gap-4 pt-2 w-full mb-12">
@@ -365,6 +372,9 @@ export default function TaskPage({ taskID, filter }) {
         handleEditCancel={handleEditCancel}
         isMobile={isMobile}
         setOpenEditModal={setOpenEditModal}
+        isLoading={isLoadingTasks}
+        isLoadingTasks={isLoadingTasks}
+        isLoadingCollections={isLoadingCollections}
       />
       </div>
 

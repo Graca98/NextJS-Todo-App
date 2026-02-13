@@ -1,19 +1,16 @@
 "use client";
 
 import { useCallback, useState, useEffect } from "react";
-import Image from "next/image";
 import { RxHamburgerMenu } from "react-icons/rx";
-import { IoFilterSharp } from "react-icons/io5";
 import { FiTrash2, FiEdit2, FiCheck, FiX, FiFolder } from "react-icons/fi";
 import { FiPlus } from "react-icons/fi"
 import { FaStar, FaClock, FaCalendarDay, FaListAlt, FaCheckCircle } from 'react-icons/fa';
-// import TaskPage from "./TaskPage";
 import { useSwipeable } from 'react-swipeable';
-// import ThemeSwitcher from "@/components/ui/ThemeSwitcher"
 import { useSidebar, Sidebar, SidebarHeader, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarGroupAction, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarSeparator} from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,8 +28,13 @@ interface SidebarProps {
     setSelectedFilter: React.Dispatch<any>
     selectedCollectionId: any
     setSelectedCollectionId: React.Dispatch<any>
-    selectedCollectionName: any
-    setSelectedCollectionName: React.Dispatch<any>
+    // selectedCollectionName: any
+    // setSelectedCollectionName: React.Dispatch<any>
+    collections: any[]
+    isLoadingCollections: boolean
+    setIsLoadingCollections: any
+    onCollectionsChanged: () => Promise<void>
+    taskCounts: Record<string, number>
   }
 
 
@@ -41,8 +43,13 @@ export default function SidebarComponent({
   setSelectedFilter,
   selectedCollectionId,
   setSelectedCollectionId,
-  selectedCollectionName,
-  setSelectedCollectionName
+  // selectedCollectionName,
+  // setSelectedCollectionName,
+  collections,
+  isLoadingCollections,
+  setIsLoadingCollections,
+  onCollectionsChanged,
+  taskCounts
 }: SidebarProps) {
   const {
     state,
@@ -53,53 +60,31 @@ export default function SidebarComponent({
     isMobile,
     toggleSidebar,
   } = useSidebar()
-  const [openSide, setOpenSide] = useState(false);
-  const [collections, setCollections] = useState([]);
-  // const [selectedCollectionId, setSelectedCollectionId] = useState(null);
-  // const [selectedCollectionName, setSelectedCollectionName] = useState("");
   const [newCollectionName, setNewCollectionName] = useState("");
   const [editId, setEditId] = useState(null);
   const [editName, setEditName] = useState("");
   // const [selectedFilter, setSelectedFilter] = useState(null);
   const [editMode, setEditMode] = useState(false);      // globální „režim úprav“
-  const [taskCounts, setTaskCounts] = useState({});     // { [collectionId]: number }
   const [showingAddInput, setShowingAddInput] = useState(false);
-
+  const [hasInitialized, setHasInitialized] = useState(false)
 
 
   const { toast } = useToast()
 
-  const fetchTaskCounts = useCallback(async () => {
-    try {
-      const res = await fetch('/api/tasks/counts?status=open')
-      if (!res.ok) throw new Error('Nepodařilo se načíst počty')
-      const map = await res.json()  // { [collectionId]: number }
-      setTaskCounts(map)
-    } catch (e) {
-      console.error(e)
-      setTaskCounts({})
-    }
-  }, [])
-  
-  // fetchCollections – volá agregovaný endpoint
-  const fetchCollections = useCallback(async () => {
-    try {
-      const res = await fetch("/api/collections");
-      if (!res.ok) throw new Error('Chyba při načítání kolekcí');
-      const data = await res.json();
-      setCollections(data);
-      if (data.length > 0) setSelectedCollectionId(data[0].id);
-  
-      await fetchTaskCounts(); 
-    } catch (error) {
-      console.error(error);
-      alert(error.message);
-    }
-  }, [fetchTaskCounts]);
 
   useEffect(() => {
-    fetchCollections();
-  }, [fetchCollections]);
+    if (
+      !hasInitialized &&
+      !selectedCollectionId &&
+      !selectedFilter &&
+      collections.length > 0
+    ) {
+      setSelectedCollectionId(collections[0].id)
+      setHasInitialized(true)
+    }
+  }, [collections, selectedCollectionId, selectedFilter, hasInitialized])
+
+
 
   // useEffect(() => {
   //   if (!openSide) setEditMode(false);
@@ -119,7 +104,8 @@ export default function SidebarComponent({
       description: `Kolekce "${newCollectionName}" byla úspěšně vytvořena.`,
     });
     setNewCollectionName("");
-    await fetchCollections();
+    await onCollectionsChanged();
+
   };
 
   const handleDeleteCollection = async (id) => {
@@ -131,7 +117,8 @@ export default function SidebarComponent({
       description: `Kolekce byla odstraněna.`,
       variant: "destructive",
     })
-    await fetchCollections();
+    await onCollectionsChanged();
+
   };
 
   const handleEditCollection = async (id) => {
@@ -147,7 +134,8 @@ export default function SidebarComponent({
     });
     setEditId(null);
     setEditName("");
-    await fetchCollections();
+    await onCollectionsChanged();
+
   };
 
   // TEST
@@ -186,18 +174,18 @@ export default function SidebarComponent({
   //   delta: 50,
   // });
 
-  const closeOnMobile = () => {
-    if (typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches) {
-      setOpenSide(false);
-    }
-  };
+  // const closeOnMobile = () => {
+  //   if (typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches) {
+  //     setOpenSide(false);
+  //   }
+  // };
   
   
   return (
     <>
       {/* <div {...handlers} className="bg-card flex flex-col sm:overflow-hidden"> */}
-      <div className="bg-card flex flex-col sm:overflow-hidden">
-        <div className="lg:mx-auto flex w-full min-h-dvh">
+      <div className="bg-sidebar flex flex-col h-full">
+        <div className="flex h-full">
           {/* Sidebar */}
 
           <Sidebar collapsible="icon" className="border-r">
@@ -228,8 +216,8 @@ export default function SidebarComponent({
                           onClick={() => {
                             setSelectedFilter(filter.id);
                             setSelectedCollectionId(null);
-                            setSelectedCollectionName(filter.name);
-                            closeOnMobile();
+                            // setSelectedCollectionName(filter.name);
+                            // closeOnMobile();
                           }}
                           tooltip={filter.name}
                         >
@@ -295,129 +283,145 @@ export default function SidebarComponent({
                       <SidebarMenuItem className="px-2 pb-1 pt-1">
                         <form
                           onSubmit={(e) => {
-                            e.preventDefault();
+                            e.preventDefault()
                             if (newCollectionName.trim()) {
-                              handleAddCollection();
-                              setShowingAddInput(false);
+                              handleAddCollection()
+                              setShowingAddInput(false)
                             }
                           }}
-                          className="flex w-full"
+                          className="flex w-full items-center"
                         >
-                          <input
+                          <Input
                             autoFocus
                             placeholder="Název..."
                             value={newCollectionName}
                             onChange={(e) => setNewCollectionName(e.target.value)}
                             onKeyDown={(e) => e.key === "Escape" && setShowingAddInput(false)}
-                            className="h-8 w-full flex-1 bg-background border rounded-l-md px-2 text-sm outline-none focus:ring-1 focus:ring-ring focus:z-10"
+                            className="rounded-r-none border-r-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                           />
-                          <button
+
+                          <Button
                             type="submit"
+                            size="icon"
+                            variant="secondary"
                             disabled={!newCollectionName.trim()}
-                            className="flex h-8 w-8 shrink-0 items-center justify-center border border-l-0 rounded-r-md bg-sidebar-accent hover:bg-accent disabled:opacity-50 transition-colors"
-                            title="Uložit"
+                            className="rounded-l-none border border-input border-l-0"
                           >
-                            <FiCheck className="text-green-600 size-4" />
-                          </button>
+                            <FiCheck className="size-4" />
+                          </Button>
                         </form>
                       </SidebarMenuItem>
                     )}
                     
-                    {collections.map((col) => {
+
+                    {isLoadingCollections ? (
+                      <div className="px-2 py-2 space-y-2">
+                        {[1,2,3,4].map((i) => (
+                          <div key={i} className="flex items-center gap-2 px-2 py-1">
+                            <Skeleton className="h-4 w-4 rounded-sm" />
+                            <Skeleton className="h-4 flex-1" />
+                            <Skeleton className="h-4 w-6" />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      collections.map((col) => {
                       const isRenaming = editId === col.id;
 
                       return (
                         <SidebarMenuItem key={col.id}>
-                          {isRenaming ? (
-                            <div className="flex w-full items-center gap-2 px-2 py-1">
-                              <input
-                                type="text"
-                                autoFocus
-                                value={editName}
-                                onChange={(e) => setEditName(e.target.value)}
-                                onKeyDown={handleEditKeyDown}
-                                className="h-7 w-full flex-1 bg-background border rounded px-2 text-sm outline-none focus:ring-1 focus:ring-ring"
-                              />
-                              <div className="flex gap-1">
-                                <FiCheck
-                                  onClick={() => handleEditCollection(col.id)}
-                                  className="cursor-pointer text-green-600 hover:scale-110"
-                                />
-                                <FiX
-                                  onClick={() => setEditId(null)}
-                                  className="cursor-pointer text-red-500 hover:scale-110"
-                                />
-                              </div>
-                            </div>
-                          ) : (
-                            <>
-                              <SidebarMenuButton
-                                asChild
-                                tooltip={col.name} // Zobrazí název v bublině, když je sidebar zavřený
-                                onClick={() => {
-                                  setSelectedCollectionId(col.id);
-                                  setSelectedCollectionName(col.name);
-                                  setSelectedFilter(null);
-                                  closeOnMobile();
-                                }}
-                              >
-                                <button className="flex items-center w-full">
-                                  {/* Ikona složky - zobrazí se i v zavřeném stavu */}
-                                  <FiFolder className="mr-2 size-4 shrink-0 text-muted-foreground" />
-                                  
-                                  <span className="truncate flex-1 text-left">{col.name}</span>
-                                  
-                                  {/* Počet úkolů - schová se automaticky v zavřeném stavu díky shadcn CSS */}
-                                  {!editMode && (
-                                    <span className="ml-auto text-xs tabular-nums text-muted-foreground">
-                                      {taskCounts[col.id] ?? 0}
-                                    </span>
-                                  )}
-                                </button>
-                              </SidebarMenuButton>
+  <div className="flex items-center justify-between w-full px-2 py-2">
 
-                              {/* Akce (Edit/Delete) vpravo - viditelné v editMode */}
-                              {editMode && (
-                                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 bg-sidebar-accent shadow-sm rounded-sm px-1">
-                                  <FiEdit2
-                                    onClick={() => {
-                                      setEditId(col.id);
-                                      setEditName(col.name);
-                                    }}
-                                    className="cursor-pointer text-muted-foreground hover:text-foreground size-3.5"
-                                  />
+    {/* LEVÁ ČÁST */}
+    <div
+      onClick={() => {
+        setSelectedCollectionId(col.id)
+        setSelectedFilter(null)
+      }}
+      className="flex items-center gap-2 flex-1 cursor-pointer"
+    >
+      <FiFolder className="size-4 shrink-0 text-muted-foreground" />
 
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <button className="text-muted-foreground hover:text-destructive">
-                                        <FiTrash2 className="size-3.5" />
-                                      </button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>{`Smazat kolekci "${col.name}"?`}</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          Tato akce je nevratná a odstraní všechny úkoly uvnitř.
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel>Zrušit</AlertDialogCancel>
-                                        <AlertDialogAction
-                                          onClick={() => handleDeleteCollection(col.id)}
-                                          className="bg-destructive hover:bg-destructive/90"
-                                        >
-                                          Smazat
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
-                                </div>
-                              )}
-                            </>
-                          )}
-                        </SidebarMenuItem>
-                      );
-                    })}
+      {isRenaming ? (
+        <input
+          autoFocus
+          value={editName}
+          onChange={(e) => setEditName(e.target.value)}
+          onKeyDown={handleEditKeyDown}
+          className="bg-transparent outline-none text-sm w-full"
+        />
+      ) : (
+        <span className="truncate text-sm">
+          {col.name}
+        </span>
+      )}
+    </div>
+
+    {/* PRAVÁ ČÁST — VŽDY STEJNÁ ŠÍŘKA */}
+    <div className="flex items-center gap-2 shrink-0 min-w-[48px] justify-end">
+
+      {isRenaming ? (
+        <>
+          <FiCheck
+            onClick={() => handleEditCollection(col.id)}
+            className="cursor-pointer text-green-500 hover:opacity-70"
+          />
+          <FiX
+            onClick={() => setEditId(null)}
+            className="cursor-pointer text-red-500 hover:opacity-70"
+          />
+        </>
+      ) : !editMode ? (
+        <span className="text-xs text-muted-foreground tabular-nums">
+          {taskCounts[col.id] ?? 0}
+        </span>
+      ) : (
+        <>
+          <FiEdit2
+            onClick={() => {
+              setEditId(col.id)
+              setEditName(col.name)
+            }}
+            className="cursor-pointer text-muted-foreground hover:text-foreground"
+          />
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button className="text-muted-foreground hover:text-destructive">
+                <FiTrash2 />
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Smazat kolekci "{col.name}"?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Tato akce je nevratná.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Zrušit</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => handleDeleteCollection(col.id)}
+                  className="bg-destructive hover:bg-destructive/90"
+                >
+                  Smazat
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </>
+      )}
+
+    </div>
+  </div>
+</SidebarMenuItem>
+
+
+
+                        )}
+                      )
+                    )}
                   </SidebarMenu>
                 </SidebarGroupContent>
               </SidebarGroup>
