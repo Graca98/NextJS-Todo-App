@@ -9,6 +9,7 @@ import { useSidebar } from "@/components/ui/sidebar"
 import { RxHamburgerMenu } from "react-icons/rx";
 import { Skeleton } from "@/components/ui/skeleton"
 
+export const dynamic = "force-dynamic";
 
 export default function Home() {
   const [collections, setCollections] = useState([])
