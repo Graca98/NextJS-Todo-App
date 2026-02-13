@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 // import Head from "next/head";
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster"
+import Sidebar from "./components/Sidebar";
+import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/lib/theme/theme-provider";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,20 +21,21 @@ export default function RootLayout({
 }) {
   return (
     <html lang="cs" suppressHydrationWarning>
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="32x32"
-          href="/favicon.ico"
-        ></link>
+      <link
+        rel="icon"
+        type="image/png"
+        sizes="32x32"
+        href="/favicon.ico"
+      ></link>
       <body className={inter.className}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-          {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+          storageKey="todo-theme"
+        >
+          <SidebarProvider defaultOpen={true}>{children}</SidebarProvider>
           <Toaster />
         </ThemeProvider>
       </body>
