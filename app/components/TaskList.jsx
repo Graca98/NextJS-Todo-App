@@ -23,13 +23,13 @@ const TaskList = ({
   <>
     {/* Nadpis */}
       {isLoadingTasks || isLoadingCollections ? (
-        <Skeleton className="h-6 w-40 mb-4" />
+        <Skeleton className="h-6 w-40 mb-4 " />
       ) : tasks.filter((task) => !task.is_completed).length > 0 ? (
-        <h2 className="text-xl text-foreground font-semibold">
+        <h2 className="text-xl text-foreground font-semibold px-3 md:px-0">
           Seznam úkolů
         </h2>
       ) : (
-        <h2 className="text-xl text-foreground font-semibold flex items-center gap-2">
+        <h2 className="text-xl text-foreground font-semibold flex items-center gap-2 px-3">
           <FaSquareCheck className="text-green-500" />
           Vše je hotovo. Přidejte nový úkol.
         </h2>
@@ -41,7 +41,7 @@ const TaskList = ({
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="flex items-center justify-between p-3 rounded-xl border border-border bg-background"
+            className="flex items-center justify-between p-3 rounded-md border border-border bg-background px-3"
           >
             <div className="flex items-center gap-3 w-full">
               <Skeleton className="h-5 w-5 rounded-sm" />
@@ -83,7 +83,7 @@ const TaskList = ({
 
         {tasks.filter((task) => task.is_completed).length > 0 && (
           <>
-            <h2 className="text-xl text-foreground font-semibold mt-8">
+            <h2 className="text-xl text-foreground font-semibold mt-8 px-3 md:px-0">
               Dokončeno
             </h2>
 

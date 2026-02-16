@@ -146,14 +146,14 @@ export default function Home() {
         taskCounts={taskCounts}
       />
 
-      <main className="flex-1 p-6">
+      <main className="flex-1 px-0 py-6 md:px-6">
 
         {/* Vlastní obsah vpravo */}
           {/* Vlastní obsah vpravo */}
       <div className="flex flex-col w-full text-foreground">
 
         {/* Titulek */}
-        <div className="flex flex-col mb-8 mt-4">
+        <div className="flex flex-col mb-8 mt-4 px-3 md:px-0">
 
           <div className="flex items-center justify-between">
 
@@ -189,7 +189,7 @@ export default function Home() {
 
           </div>
 
-          <span className="text-xs hidden md:block">
+          <span className="text-xs px-8 md:px-0">
             {isLoadingCollections ? (
               <Skeleton className="h-4 w-24 mt-2" />
             ) : (
@@ -205,7 +205,6 @@ export default function Home() {
 
         </div>
         </div>
-
 
 
         <TaskPage

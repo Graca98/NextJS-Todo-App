@@ -133,6 +133,9 @@ body {
 }
 }
 
+[data-state="open"] {
+  backdrop-filter: blur(4px);
+}
 
 
 @layer base {
