@@ -199,6 +199,15 @@ export default function TaskPage({ taskID, filter, isLoadingCollections }) {
       if (!res.ok) throw new Error('Chyba při přidávání úkolu');
       const result = await res.json();
 
+      const createdTask = result.task ?? {
+        id: result.id ?? Date.now(),
+        ...newTask,
+        is_completed: false,
+        created_at: new Date().toISOString(),
+      }
+
+      setTasks((prev) => [createdTask, ...prev])
+
       toast({
         title: "Úkol přidán",
         description: `Úkol "${newTask.name}" byl přidán.`,
@@ -218,7 +227,7 @@ export default function TaskPage({ taskID, filter, isLoadingCollections }) {
     const end = performance.now(); // ⏱️ konec měření
     console.log(`⏱️ Přidání úkolu (API + fetchData) trvalo: ${Math.round(end - start)} ms`);
 
-    await fetchData()
+    // await fetchData()
 
     setTask("");
     setTaskDate("");
