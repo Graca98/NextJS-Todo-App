@@ -10,6 +10,7 @@ import useIsMobile from "../../lib/hooks/useIsMobile.js";
 import TaskList from "./TaskList.jsx";
 import TaskEditForm from "./TaskEditForm.jsx";
 import AddTask from "./AddTask.jsx";
+import AddTaskFAB from "./AddTaskFAB.jsx"
 
 // Icons
 import { IoFilterSharp } from "react-icons/io5";
@@ -340,7 +341,7 @@ export default function TaskPage({ taskID, filter, isLoadingCollections }) {
   return (
     <div>
       <div className="">
-        <AddTask
+        <AddTaskFAB
           openTaskModal={openTaskModal}
           setOpenTaskModal={setOpenTaskModal}
           formState={formState}

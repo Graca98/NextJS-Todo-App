@@ -27,7 +27,7 @@ export default function TaskCard({
 
   return (
     <Card
-      className={`p-4 border border-border bg-card hover:bg-muted/40 transition-colors ${
+      className={`px-3 md:px-4 py-2 md:py-2 border border-border rounded-none md:rounded-md bg-card hover:bg-muted/40 transition-colors text-sm ${
         status ? "opacity-50" : ""
       }`}
     >
@@ -43,7 +43,7 @@ export default function TaskCard({
                 if (e.key === "Enter") handleEditSave();
                 if (e.key === "Escape") handleEditCancel();
               }}
-              className="bg-background border border-border rounded-md px-2 py-1 text-sm w-full"
+              className="bg-background border border-border rounded-none md:rounded-md px-2 py-1 text-sm w-full"
             />
           ) : (
             <span className={`flex-1 ${status ? "line-through" : ""}`}>
@@ -66,7 +66,7 @@ export default function TaskCard({
                 <FiCheck className="w-4 h-4" />
               </Button>
               <Button size="icon" variant="ghost" onClick={handleEditCancel}>
-                <FiX className="w-4 h-4" />
+                <FiX className="w-4 h-4 text-destructive" />
               </Button>
             </>
           ) : (
