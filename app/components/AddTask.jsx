@@ -16,8 +16,6 @@ import { cs } from "date-fns/locale"
 import { CalendarIcon } from "lucide-react"
 
 const AddTask = ({ task, setTask, handleSubmit, taskDate, setTaskDate }) => {
-  const [showCalendar, setShowCalendar] = useState(false)
-  const [open, setOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState(
     taskDate ? new Date(taskDate) : undefined
   )
@@ -27,23 +25,11 @@ const AddTask = ({ task, setTask, handleSubmit, taskDate, setTaskDate }) => {
 
   const handleDateSelect = (date) => {
     if (!date) return
-
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-
     if (date < today) return
 
     setSelectedDate(date)
     setTaskDate(date.toISOString().split("T")[0])
-
-    setShowCalendar(false)
-    setOpen(false)
   }
-
-
-
-  const setToday = () => handleDateSelect(today)
-  const setTomorrow = () => handleDateSelect(addDays(today, 1))
 
   return (
     <Card className="px-3 md:px-4 py-2 md:py-4 mb-6 bg-card border border-border rounded-none md:rounded-md">
@@ -61,8 +47,7 @@ const AddTask = ({ task, setTask, handleSubmit, taskDate, setTaskDate }) => {
             className="flex-1"
           />
 
-          {/* DATE PICKER */}
-          <Popover open={open} onOpenChange={setOpen}>
+          <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="secondary"
@@ -75,19 +60,13 @@ const AddTask = ({ task, setTask, handleSubmit, taskDate, setTaskDate }) => {
               </Button>
             </PopoverTrigger>
 
-            <PopoverContent
-              align="start"
-              className="w-72 p-3 space-y-3 animate-in fade-in-0 zoom-in-95 duration-200"
-            >
-              {/* QUICK SELECT */}
+            <PopoverContent align="start" className="w-72 p-3 space-y-3">
+
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   className="flex-1"
-                  onClick={() => {
-                    const today = new Date()
-                    handleDateSelect(today)
-                  }}
+                  onClick={() => handleDateSelect(today)}
                 >
                   Dnes
                 </Button>
@@ -95,42 +74,19 @@ const AddTask = ({ task, setTask, handleSubmit, taskDate, setTaskDate }) => {
                 <Button
                   variant="outline"
                   className="flex-1"
-                  onClick={() => {
-                    const tomorrow = new Date()
-                    tomorrow.setDate(tomorrow.getDate() + 1)
-                    handleDateSelect(tomorrow)
-                  }}
+                  onClick={() => handleDateSelect(addDays(today, 1))}
                 >
                   Zítra
                 </Button>
               </div>
 
-              {/* TOGGLE CALENDAR */}
-              <Button
-                variant="secondary"
-                className="w-full"
-                onClick={() => setShowCalendar((prev) => !prev)}
-              >
-                Vybrat datum
-              </Button>
-
-              {/* CALENDAR */}
-              {showCalendar && (
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => {
-                    handleDateSelect(date)
-                    setShowCalendar(false)
-                  }}
-                  disabled={(date) =>
-                    date < new Date(new Date().setHours(0, 0, 0, 0))
-                  }
-                  autoFocus
-                />
-              )}
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={handleDateSelect}
+                disabled={(date) => date < today}
+              />
             </PopoverContent>
-
           </Popover>
 
         </div>
