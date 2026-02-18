@@ -5,11 +5,22 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from '../../lib/supabaseClient.js';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { CalendarIcon } from "lucide-react"
+import { format, addDays } from "date-fns"
+import { cs } from "date-fns/locale"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast"
 import useIsMobile from "../../lib/hooks/useIsMobile.js";
 import TaskList from "./TaskList.jsx";
 import TaskEditForm from "./TaskEditForm.jsx";
-import AddTask from "./AddTask.jsx";
 import AddTaskFAB from "./AddTaskFAB.jsx"
 
 // Icons
@@ -23,6 +34,7 @@ export default function TaskPage({ taskID, filter, isLoadingCollections }) {
   const [openTaskModal, setOpenTaskModal] = useState(false);
   const isMobile = useIsMobile();
   const [openEditModal, setOpenEditModal] = useState(false);
+  const [editDate, setEditDate] = useState(null);
   // Skeleton
   const [isLoadingTasks, setIsLoadingTasks] = useState(true);
   const [editValue, setEditValue] = useState("");
@@ -32,6 +44,7 @@ export default function TaskPage({ taskID, filter, isLoadingCollections }) {
     formText: "",
   });
   const [taskDate, setTaskDate] = useState("");
+  const [openEditSheet, setOpenEditSheet] = useState(false)
   const { toast } = useToast()
   // Sidebar useState
   // const [openSide, setOpenSide] = useState(false);
@@ -199,14 +212,7 @@ export default function TaskPage({ taskID, filter, isLoadingCollections }) {
       if (!res.ok) throw new Error('Chyba při přidávání úkolu');
       const result = await res.json();
 
-      const createdTask = result.task ?? {
-        id: result.id ?? Date.now(),
-        ...newTask,
-        is_completed: false,
-        created_at: new Date().toISOString(),
-      }
-
-      setTasks((prev) => [createdTask, ...prev])
+      setTasks((prev) => [result.task, ...prev])
 
       toast({
         title: "Úkol přidán",
@@ -239,41 +245,53 @@ export default function TaskPage({ taskID, filter, isLoadingCollections }) {
     setOpenTaskModal(false);
   }, [task, taskDate, fetchData, taskID, toast]);
 
-  // Po kliknutí na edit button se načte value daného úkolu
-  const handleEditBtn = (id) => {
-    const task = tasks.find((t) => t.id === id);
-    if (!task) return;
-    setEditTaskId(id);
-    setEditValue(task.name);
-  
-    if (isMobile) {
-      setOpenEditModal(true);
-    }
-  };
+ const handleEditBtn = (id) => {
+  const task = tasks.find((t) => t.id === id);
+  if (!task) return;
+
+  setEditTaskId(id);
+  setEditValue(task.name);
+  setEditDate(task.due_date);
+
+  if (isMobile) {
+    setOpenEditSheet(true);
+  }
+};
+
   
 
-  const handleEditSave = async () => {
-    try {
-      await supabase.from("tasks").update({ name: editValue }).eq("id", editTaskId);
-      setTasks((prev) =>
-        prev.map((t) => (t.id === editTaskId ? { ...t, name: editValue } : t))
-      );
-      setEditTaskId(null);
-      setEditValue("");
-      setOpenEditModal(false);
-      toast({
-        title: "Úkol upraven",
-        description: `Úkol byl upraven na "${editValue}".`,
+ const handleEditSave = async () => {
+  try {
+    await supabase
+      .from("tasks")
+      .update({
+        name: editValue,
+        due_date: editDate || null,
       })
-    } catch (error) {
-      console.error(error);
-      toast({
-        title: "Chyba při úpravě úkolu",
-        description: "Úkol se nepodařilo upravit.",
-        variant: "destructive",
-      })
-    }
-  };
+      .eq("id", editTaskId);
+
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === editTaskId
+          ? { ...t, name: editValue, due_date: editDate }
+          : t
+      )
+    );
+
+    setEditTaskId(null);
+    setEditValue("");
+    setEditDate(null);
+
+    if (isMobile) {
+  setOpenEditSheet(false);
+}
+
+
+  } catch (error) {
+    console.error(error);
+  }
+};
+
   
   const handleEditCancel = () => {
     setEditTaskId(null);
@@ -363,6 +381,54 @@ export default function TaskPage({ taskID, filter, isLoadingCollections }) {
         />
       </div>
 
+      {isMobile && (
+  <Sheet open={openEditSheet} onOpenChange={setOpenEditSheet}>
+    <SheetContent side="bottom" className="rounded-t-2xl pb-10 px-4">
+      <SheetHeader>
+        <SheetTitle>Upravit úkol</SheetTitle>
+      </SheetHeader>
+
+      <div className="mt-6 flex flex-col gap-5">
+
+        {/* INPUT */}
+        <Input
+          autoFocus
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          className="w-full"
+        />
+
+        {/* DATUM */}
+        <EditDatePicker
+          editDate={editDate}
+          setEditDate={setEditDate}
+        />
+
+        {/* BUTTONS */}
+        <div className="flex gap-3">
+          <Button
+            variant="secondary"
+            className="flex-1"
+            onClick={handleEditSave}
+          >
+            Uložit
+          </Button>
+
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => setOpenEditSheet(false)}
+          >
+            Zrušit
+          </Button>
+        </div>
+
+      </div>
+    </SheetContent>
+  </Sheet>
+)}
+
+
       {!isLoadingCollections && !isLoadingTasks && !filter && !taskID && (
         <p>Vyber kolekci nebo filtr...</p>
       )}
@@ -385,6 +451,8 @@ export default function TaskPage({ taskID, filter, isLoadingCollections }) {
         isLoading={isLoadingTasks}
         isLoadingTasks={isLoadingTasks}
         isLoadingCollections={isLoadingCollections}
+        editDate={editDate}
+        setEditDate={setEditDate}
       />
       </div>
 
@@ -411,4 +479,77 @@ export default function TaskPage({ taskID, filter, isLoadingCollections }) {
       />
     </div>
   );
+}
+
+function EditDatePicker({ editDate, setEditDate }) {
+  const [open, setOpen] = useState(false)
+
+  const today = new Date()
+  today.setHours(0,0,0,0)
+
+  const handleSelect = (date) => {
+    if (!date) return
+    if (date < today) return
+
+    setEditDate(date.toISOString().split("T")[0])
+    setOpen(false)
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="secondary"
+          className="justify-between w-full"
+        >
+          {editDate
+            ? format(new Date(editDate), "dd. MM. yyyy", { locale: cs })
+            : "Datum"}
+
+          {editDate ? (
+            <span
+              onClick={(e) => {
+                e.stopPropagation()
+                setEditDate(null)
+              }}
+              className="ml-2 text-muted-foreground cursor-pointer"
+            >
+              ✕
+            </span>
+          ) : (
+            <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+          )}
+        </Button>
+      </PopoverTrigger>
+
+      <PopoverContent className="w-72 p-3 space-y-3">
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => handleSelect(today)}
+          >
+            Dnes
+          </Button>
+
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() =>
+              handleSelect(addDays(today, 1))
+            }
+          >
+            Zítra
+          </Button>
+        </div>
+
+        <Calendar
+          mode="single"
+          selected={editDate ? new Date(editDate) : undefined}
+          onSelect={handleSelect}
+          disabled={(date) => date < today}
+        />
+      </PopoverContent>
+    </Popover>
+  )
 }

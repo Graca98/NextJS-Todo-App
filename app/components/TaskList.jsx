@@ -17,6 +17,8 @@ const TaskList = ({
   isLoading,
   isLoadingTasks,
   isLoadingCollections,
+  editDate,
+  setEditDate,
 }) => {
 
   return (
@@ -78,6 +80,8 @@ const TaskList = ({
               handleEditSave={handleEditSave}
               handleEditCancel={handleEditCancel}
               isMobile={isMobile}
+              editDate={editDate}
+              setEditDate={setEditDate}
             />
           ))}
 
@@ -105,6 +109,8 @@ const TaskList = ({
                   handleEditSave={handleEditSave}
                   handleEditCancel={handleEditCancel}
                   isMobile={isMobile}
+                  editDate={editDate}
+                  setEditDate={setEditDate}
                 />
               ))}
           </>

@@ -67,7 +67,7 @@ export async function POST(request) {
         created_at: new Date().toISOString()
       }]);
 
-    return NextResponse.json({ message: 'Úkol přidán', data }, { status: 201 });
+    return NextResponse.json({ message: 'Úkol přidán', task: data }, { status: 201 });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: error.message }, { status: 500 });
