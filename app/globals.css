@@ -8,37 +8,145 @@
   --background-end-rgb: 255, 255, 255;
 }
 
-@media (prefers-color-scheme: light) {
+/* @media (prefers-color-scheme: light) {
   :root {
     --foreground-rgb: 255, 255, 255;
     --background-start-rgb: 0, 0, 0;
     --background-end-rgb: 0, 0, 0;
   }
-}
+} */
 
-html {
+/* html {
   color-scheme: light;
-}
-
+} */
 
 body {
-  color: black;
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  /* color: black; */
+  min-height: 100vh;
 }
 
 .background {
-  background: rgb(172,244,247);
-  background: -moz-linear-gradient(90deg, rgba(172,244,247,0.6021044075144508) 0%, rgba(45,197,255,0.30152637283236994) 51%, rgba(89,172,247,0.39979226878612717) 100%);
-  background: -webkit-linear-gradient(90deg, rgba(172,244,247,0.6021044075144508) 0%, rgba(45,197,255,0.30152637283236994) 51%, rgba(89,172,247,0.39979226878612717) 100%);
-  background: linear-gradient(90deg, rgba(172,244,247,0.6021044075144508) 0%, rgba(45,197,255,0.30152637283236994) 51%, rgba(89,172,247,0.39979226878612717) 100%);
-  height: 100%; /* Nastaví výšku elementu na 100% viewportu */
+  background: rgb(17,16,15);
+  /* background: rgb(172, 244, 247);
+  background: -moz-linear-gradient(
+    90deg,
+    rgba(172, 244, 247, 0.6021044075144508) 0%,
+    rgba(45, 197, 255, 0.30152637283236994) 51%,
+    rgba(89, 172, 247, 0.39979226878612717) 100%
+  );
+  background: -webkit-linear-gradient(
+    90deg,
+    rgba(172, 244, 247, 0.6021044075144508) 0%,
+    rgba(45, 197, 255, 0.30152637283236994) 51%,
+    rgba(89, 172, 247, 0.39979226878612717) 100%
+  );
+  background: linear-gradient(
+    90deg,
+    rgba(172, 244, 247, 0.6021044075144508) 0%,
+    rgba(45, 197, 255, 0.30152637283236994) 51%,
+    rgba(89, 172, 247, 0.39979226878612717) 100%
+  ); */
+  min-height: 100vh; /* Nastaví výšku elementu na 100% viewportu */
   width: 100%; /* Nastaví šířku elementu na 100% */
 }
 
 
 
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 96.1%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+    .dark {
+  /* Base */
+  --background: 0 0% 12%;
+  --foreground: 0 0% 92%;
+
+  /* Cards */
+  --card: 0 0% 16%;
+  --card-foreground: 0 0% 92%;
+
+  --popover: 0 0% 16%;
+  --popover-foreground: 0 0% 92%;
+
+  /* UI layers */
+  --primary: 0 0% 92%;
+  --primary-foreground: 0 0% 12%;
+
+  --secondary: 0 0% 18%;
+  --secondary-foreground: 0 0% 92%;
+
+  --muted: 0 0% 18%;
+  --muted-foreground: 0 0% 65%;
+
+  --accent: 0 0% 20%;
+  --accent-foreground: 0 0% 92%;
+
+  /* Borders */
+  --border: 0 0% 22%;
+  --input: 0 0% 22%;
+  --ring: 0 0% 70%;
+
+  /* Sidebar — TMAVŠÍ než background */
+  --sidebar-background: 0 0% 8%;
+  --sidebar-foreground: 0 0% 90%;
+
+  --sidebar-primary: 0 0% 92%;
+  --sidebar-primary-foreground: 0 0% 8%;
+
+  --sidebar-accent: 0 0% 16%;
+  --sidebar-accent-foreground: 0 0% 92%;
+
+  --sidebar-border: 0 0% 16%;
+  --sidebar-ring: 0 0% 70%;
+}
+}
+
+[data-state="open"] {
+  backdrop-filter: blur(4px);
+}
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+input[type="date"] {
+  -webkit-appearance : none;
+}

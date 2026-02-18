@@ -1,292 +1,547 @@
-//! npm install uuid
-//todo dokončit edit button. Potřebuji vyřešit, aby mi do editBtn tlačítka šlo id daného tásku a já na to následně změnil text
-
 "use client";
 
-import { useState } from "react";
-import { v4 as uuidv4 } from "uuid";
-import Task from "./Task";
+//todo Další úklid kódu
+//todo Opravit filtr podle času
 
-export default function TaskPage() {
-  const [tempID, setTempID] = useState("");
-  const storedValue = localStorage.getItem("tasks");
-  const value = storedValue !== null ? JSON.parse(storedValue) : [];
-  console.log(value);
-  const [tasks, setTasks] = useState(value);
-  /**
-   * const [tasks, setTasks] = useState([
-    { id: uuidv4(), text: "Vymyslet formát datumu a času", status: false },
-    {
-      id: uuidv4(),
-      text: "Přidat ukládání/edit/mazání do local storage",
-      status: false,
-    },
-    { id: uuidv4(), text: "Přidat filtry", status: false },
-    {
-      id: uuidv4(),
-      text: "Přidat ukazatel kolik ještě zbýva splnit",
-      status: false,
-    },
-    {
-      id: uuidv4(),
-      text: "Odstranit černý checkbox při hoveru (theme problém)",
-      status: false,
-    },
-    {
-      id: uuidv4(),
-      text: "Přidání úkolu bude schované pdo tlačítkem 'nový ukol'",
-      status: false,
-    },
-    {
-      id: uuidv4(),
-      text: "Další verze jako film picker",
-      status: false,
-    },
-  ]);
-   */
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "../../lib/supabaseClient.js";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format, addDays } from "date-fns";
+import { cs } from "date-fns/locale";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import useIsMobile from "../../lib/hooks/useIsMobile.js";
+import TaskList from "./TaskList.jsx";
+import AddTaskFAB from "./AddTaskFAB.jsx";
 
+// Icons
+import { IoFilterSharp } from "react-icons/io5";
+import { RxHamburgerMenu } from "react-icons/rx";
+
+export default function TaskPage({ taskID, filter, isLoadingCollections }) {
+  const [editTaskId, setEditTaskId] = useState(null);
+  const [tasks, setTasks] = useState([]);
+  const [task, setTask] = useState("");
+  const isMobile = useIsMobile();
+  // const [openEditModal, setOpenEditModal] = useState(false);
+  const [editDate, setEditDate] = useState(null);
+  // Skeleton
+  const [isLoadingTasks, setIsLoadingTasks] = useState(true);
+  const [editValue, setEditValue] = useState("");
   const [formState, setFormState] = useState({
     inputLabel: "",
     spanLabel: "",
     formText: "",
   });
+  const [taskDate, setTaskDate] = useState("");
+  const [openEditSheet, setOpenEditSheet] = useState(false);
+  const [showEditCalendar, setShowEditCalendar] = useState(false);
+  const { toast } = useToast();
+  // Sidebar useState
+  // const [openSide, setOpenSide] = useState(false);
+
+  // Načte úkoly z mysql database
+  const fetchData = useCallback(async () => {
+    setIsLoadingTasks(true);
+
+    const start = performance.now();
+    try {
+      let queryBuilder = supabase
+        .from("tasks")
+        .select("*, collections(id, user_id)")
+        .order("created_at", { ascending: false });
+
+      if (filter) {
+        if (filter === "important") {
+          queryBuilder = queryBuilder.eq("important", true);
+        } else if (filter === "overdue") {
+          queryBuilder = queryBuilder
+            .lt("due_date", new Date().toISOString())
+            .eq("is_completed", false);
+        } else if (filter === "today") {
+          const today = new Date().toISOString().split("T")[0];
+          queryBuilder = queryBuilder
+            .eq("due_date", today)
+            .eq("is_completed", false);
+        } else if (filter === "completed") {
+          queryBuilder = queryBuilder.eq("is_completed", true);
+        }
+      } else if (taskID) {
+        queryBuilder = queryBuilder.eq("collection_id", taskID);
+      } else {
+        setTasks([]);
+        return;
+      }
+
+      // Filtrujeme přes kolekci - user_id 1
+      queryBuilder = queryBuilder.eq("collections.user_id", 1);
+
+      const { data, error } = await queryBuilder;
+      if (error) throw error;
+
+      // Supabase vrací objekty s embedded `collections`, pokud připojíš join
+      const filteredTasks = data.filter(
+        (task) => task.collections?.user_id === 1,
+      );
+
+      setTasks(filteredTasks ?? []);
+    } catch (error) {
+      console.error("Chyba při načítání úkolů:", error);
+      toast({
+        title: "Chyba při načítání úkolů",
+        description: "Nepodařilo se načíst úkoly. Zkus to prosím znovu.",
+        variant: "destructive",
+      });
+      const end = performance.now();
+      console.log(`📦 fetchData trvalo: ${Math.round(end - start)} ms`);
+      setTasks([]);
+    } finally {
+      setIsLoadingTasks(false);
+    }
+  }, [taskID, filter, toast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   // Změní status (true/false) tasku při kliknutí na checkbox
-  const handleChange = (id) => {
-    let storedTasks = JSON.parse(localStorage.getItem("tasks"));
-    let handleStatus = storedTasks.map((task) =>
-      task.id === id ? { ...task, status: !task.status } : task,
-    );
+  const handleChange = async (id) => {
+    try {
+      const taskToUpdate = tasks.find((task) => task.id === id);
+      if (!taskToUpdate) return;
 
-    setTasks(handleStatus);
-    localStorage.setItem("tasks", JSON.stringify(handleStatus));
+      const newStatus = !taskToUpdate.is_completed;
+
+      await fetch(`/api/tasks/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_completed: newStatus }),
+      });
+
+      // Lokálně aktualizujeme stav v UI
+      const updatedTasks = tasks.map((task) =>
+        task.id === id ? { ...task, is_completed: newStatus } : task,
+      );
+
+      setTasks(updatedTasks);
+
+      toast({
+        title: newStatus ? "Úkol dokončen" : "Úkol vrácen zpět",
+        description: `Úkol "${taskToUpdate.name}" byl ${newStatus ? "označen jako hotový" : "označen jako nedokončený"}.`,
+      });
+    } catch (error) {
+      console.error("Chyba při změně stavu úkolu:", error);
+      toast({
+        title: "Chyba",
+        description: "Nepodařilo se aktualizovat stav úkolu.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Smaže vybraný task
-  const handleDelete = (id) => {
-    let storedTasks = JSON.parse(localStorage.getItem("tasks"));
-    let newTasks = storedTasks.filter((task) => task.id !== id);
+  const handleDelete = async (id) => {
+    try {
+      const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Chyba při mazání úkolu");
 
-    setTasks(newTasks);
-    localStorage.setItem("tasks", JSON.stringify(newTasks));
+      // Lokálně vymaže úkol ze stavu
+      const newTasks = tasks.filter((task) => task.id !== id);
+      setTasks(newTasks);
+
+      toast({
+        title: "Úkol smazán",
+        description: `Úkol byl odstraněn.`,
+        variant: "destructive",
+      });
+    } catch (error) {
+      console.error("Chyba při mazání úkolu:", error);
+      toast({
+        title: "Chyba při mazání",
+        description: "Úkol se nepodařilo odstranit.",
+        variant: "destructive",
+      });
+    }
   };
 
-  // Po kliknutí na edit button se načte value daného úkolu
-  const handleEditBtn = (id) => {
-    setTempID(id);
-    tasks.map((one) => {
-      if (one.id === id) {
-        console.log("if test je: " + one.text);
-        setEditValue(one.text);
-      }
-    });
-  };
-
-  // Vybere veškerý text při kliku na edit input
-  const handleFocus = (event) => event.target.select();
-
-  // Save button v edit modalu
-  const handleSave = (id) => {
-    const storedTasks = JSON.parse(localStorage.getItem("tasks"));
-    const editedTasks = storedTasks.map((one) =>
-      one.id === id ? { ...one, text: editValue } : one,
-    );
-
-    setTasks(editedTasks);
-    localStorage.setItem("tasks", JSON.stringify(editedTasks));
-
-    setEditValue("");
-  };
-
-  const [task, setTask] = useState("");
-  const [editValue, setEditValue] = useState("");
-
-  // Vytvoří nový task
-  const handleClick = () => {
+  // Vytvoří úkol
+  const handleSubmit = useCallback(async () => {
     if (task.trim() === "") {
-      // dodělat
+      return;
+    } else if (task.length > 100) {
       setFormState({
         inputLabel: "input-error",
-        inputLabel: "text-error",
-        formText: "Input nemůže být prázdný!",
+        spanLabel: "text-error",
+        formText: `Úkol je příliš dlouhý (${task.length}/100)`,
       });
       return;
     }
 
-    console.log("form state je: " + formState.formText);
-
     const newTask = {
-      id: uuidv4(),
-      text: task,
-      status: false,
+      collection_id: taskID,
+      name: task.trim(),
+      due_date: taskDate || null,
+      important: false,
+      priority: "medium",
+      reminder_at: null,
     };
 
-    setTasks([...tasks, newTask]);
-    localStorage.setItem("tasks", JSON.stringify([...tasks, newTask]));
-    setTask('')
+    const start = performance.now();
+
+    try {
+      const res = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newTask),
+      });
+      if (!res.ok) throw new Error("Chyba při přidávání úkolu");
+      const result = await res.json();
+
+      setTasks((prev) => [result.task, ...prev]);
+
+      toast({
+        title: "Úkol přidán",
+        description: `Úkol "${newTask.name}" byl přidán.`,
+      });
+
+      console.log("✅ Výsledek z API:", result);
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Chyba při přidání úkolu",
+        description: "Úkol se nepodařilo vytvořit.",
+        variant: "destructive",
+      });
+    }
+
+    const end = performance.now(); // ⏱️ konec měření
+    console.log(
+      `⏱️ Přidání úkolu (API + fetchData) trvalo: ${Math.round(end - start)} ms`,
+    );
+
+    // await fetchData()
+
+    setTask("");
+    setTaskDate("");
+    setFormState({
+      inputLabel: "",
+      spanLabel: "",
+      formText: "",
+    });
+  }, [task, taskDate, fetchData, taskID, toast]);
+
+  const handleEditBtn = (id) => {
+    const task = tasks.find((t) => t.id === id);
+    if (!task) return;
+
+    setEditTaskId(id);
+    setEditValue(task.name);
+    setEditDate(task.due_date);
+
+    if (isMobile) {
+      setOpenEditSheet(true);
+    }
   };
 
+  const handleEditSave = async () => {
+    if (!editTaskId) {
+      console.error("editTaskId je null – nelze uložit");
+      return;
+    }
+
+    try {
+      await supabase
+        .from("tasks")
+        .update({
+          name: editValue,
+          due_date: editDate || null,
+        })
+        .eq("id", editTaskId);
+
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === editTaskId
+            ? { ...t, name: editValue, due_date: editDate }
+            : t,
+        ),
+      );
+
+      setEditTaskId(null);
+      setEditValue("");
+      setEditDate(null);
+
+      if (isMobile) {
+        setOpenEditSheet(false);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleEditCancel = () => {
+    if (isMobile) {
+      setOpenEditSheet(false);
+    }
+
+    setEditTaskId(null);
+    setEditValue("");
+    setEditDate(null);
+  };
+
+  // Vybere veškerý text při kliknutí na edit input
+  const handleFocus = (event) => event.target.select();
+  // const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => event.target.select();
+
+  // Save button v edit modalu
+  // const handleEdit = async (id) => {
+  //   try {
+  //     const res = await fetch(`/api/tasks/${id}`, {
+  //       method: 'PATCH',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ name: editValue })
+  //     });
+  //     if (!res.ok) throw new Error('Chyba při úpravě úkolu');
+
+  //     // Lokálně upraví úkol
+  //     const editedTasks = tasks.map((one) =>
+  //       one.id === id ? { ...one, name: editValue } : one
+  //     );
+  //     setTasks(editedTasks);
+  //     setEditValue("");
+  //     setOpenEditModal(false);
+  //   } catch (error) {
+  //     console.error("Chyba při mazání úkolu:", error);
+  //   }
+
+  // };
+
+  {
+    /* =========================== Filters ================================= */
+  }
+  //todo Opravit filtry na sql dotazy
+
+  function sortByTimeOldest() {
+    console.log("Seřazuji podle času");
+    const sortedTasks = [...tasks].sort((a, b) => {
+      let dateA = new Date(a.timeAdded).getTime();
+      let dateB = new Date(b.timeAdded).getTime();
+      return dateA - dateB;
+    });
+    setTasks(sortedTasks);
+  }
+  function sortByTimeNewest() {
+    console.log("Seřazuji podle času");
+    const sortedTasks = [...tasks].sort((a, b) => {
+      let dateA = new Date(a.timeAdded).getTime();
+      let dateB = new Date(b.timeAdded).getTime();
+      return dateB - dateA;
+    });
+    setTasks(sortedTasks);
+  }
+
+  function sortAlphabeticallyAsc() {
+    console.log("Seřazuji podle abecedy");
+    const sortedTasks = [...tasks].sort((a, b) => {
+      return a.title.localeCompare(b.title);
+    });
+    setTasks(sortedTasks);
+  }
+  function sortAlphabeticallyDesc() {
+    console.log("Seřazuji podle abecedy");
+    const sortedTasks = [...tasks].sort((a, b) => {
+      return b.title.localeCompare(a.title);
+    });
+    setTasks(sortedTasks);
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   return (
-    <div className="background">
-      <div className="mx-auto flex w-full max-w-sm flex-col gap-6 py-4 md:py-8 px-1">
-        <div className="flex flex-col items-center">
-          <h1 className="text-3xl font-semibold">Todo App</h1>
-          <p className="text-sm">NextJs ukolníček</p>
-        </div>
+    <div>
+      <div className="">
+        <AddTaskFAB
+          formState={formState}
+          setFormState={setFormState}
+          task={task}
+          setTask={setTask}
+          handleSubmit={handleSubmit}
+          taskDate={taskDate}
+          setTaskDate={setTaskDate}
+        />
       </div>
 
-      {/*Seznam úkolů */}
-      <div className="mx-auto flex w-full max-w-xl lg:max-w-4xl px-2 mb-12 flex-col gap-3 md:gap-4 pt-2 pb-24">
-        <label
-          className="btn btn-primary w-6/12 mx-auto md:mx-0 md:w-32 mb-4 md:mb-2"
-          htmlFor="modal-newTask"
-        >
-          Přidat nový
-        </label>
-        <h2 className="text-xl font-semibold">
-          {tasks.filter((oneTask) => !oneTask.status).length > 0
-            ? "Seznam úkolů"
-            : "Zatím žádný úkol není :("}
-        </h2>
-        {tasks
-          .filter((oneTask) => !oneTask.status)
-          .map((oneTask) => (
-            <Task
-              key={oneTask.id}
-              taskText={oneTask.text}
-              change={() => handleChange(oneTask.id)}
-              status={oneTask.status}
-              deleteTask={() => handleDelete(oneTask.id)}
-              modal="modal-edit"
-              editTask={() => handleEditBtn(oneTask.id)}
-            />
-          ))}
+      {isMobile && (
+        <Sheet
+  open={openEditSheet}
+  onOpenChange={(value) => {
+    setOpenEditSheet(value)
 
-        <h2 className="text-xl font-semibold mt-12">
-          {tasks.filter((oneTask) => oneTask.status).length > 0
-            ? "Dokončeno"
-            : ""}
-        </h2>
-        {tasks
-          .filter((oneTask) => oneTask.status)
-          .map((oneTask) => (
-            <Task
-              key={oneTask.id}
-              taskText={oneTask.text}
-              change={() => handleChange(oneTask.id)}
-              status={oneTask.status}
-              deleteTask={() => handleDelete(oneTask.id)}
-              modal="modal-edit"
-              editTask={() => handleEditBtn(oneTask.id)}
-            />
-          ))}
-        <h2 className="text-xl font-semibold mt-12">Co vše aplikace umí</h2>
-        <ul className="list-disc list-inside">
-          <li>Přidání úkolu přes tlačítko (modol)</li>
-          <li>
-            Možnost editace úkolu, modal načte předchozí zprávu, kterou lze
-            editovat. Když se klikni na input, tak se vybere celý text pro
-            rychlejší smazání a přepsání
-          </li>
-          <li>Možnost smazat úkol</li>
-          <li>Nadpisy se schování pokud nejsou žádné úkoly</li>
-          <li>Ukládání úkolů do localStorage</li>
-          <li>
-            Úkoly se atomaticky přemístí pokud jsou splněné (checkbox = true) +
-            se aplikuje CSS efekt
-          </li>
-        </ul>
-      </div>
+    if (!value) {
+      setEditTaskId(null)
+      setEditValue("")
+      setEditDate(null)
+    }
+  }}
+>
 
-      {/* Modal na edit tasků */}
-      {/* <label className="btn btn-outline-warning btn-xs" htmlFor="modal-edit">
-        Edit new
-      </label> */}
-      <input className="modal-state" id="modal-edit" type="checkbox" />
-      <div className="modal">
-        <label className="modal-overlay" htmlFor="modal-edit"></label>
-        <div className="modal-content flex flex-col w-screen md:w-6/12 max-w-screen-sm gap-5 bg-white">
-          <div className="form-group">
-            <div className="form-field">
-              <label className="form-label text-lg text-gray-700">Upravte úkol</label>
+          <SheetContent side="bottom" className="rounded-t-2xl pb-10 px-4">
+            <SheetHeader>
+              <SheetTitle>Upravit úkol</SheetTitle>
+              <SheetDescription className="hidden">
+                Zde můžete upravit úkol
+              </SheetDescription>
+            </SheetHeader>
 
-              <input
-                placeholder="Upravte úkol"
-                type="text"
-                className="input max-w-full bg-white text-black"
-                onChange={(e) => setEditValue(e.target.value)}
-                onFocus={handleFocus}
+            <form
+  className="mt-6 flex flex-col gap-5"
+  onSubmit={(e) => {
+    e.preventDefault()
+    handleEditSave()
+  }}
+>
+              {/* INPUT */}
+              <Input
+                autoFocus
                 value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                className="w-full"
               />
-              <label className="form-label">
-                <span className="form-label-alt">Neplatný formát</span>
-              </label>
-            </div>
-          </div>
-          <div className="flex gap-3 w-full mx-auto justify-center">
-            <label
-              onClick={() => handleSave(tempID)}
-              className="btn btn-success btn-block w-32"
-              htmlFor="modal-edit"
-            >
-              Uložit
-            </label>
 
-            <label
-              htmlFor="modal-edit"
-              className="btn btn-block bg-gray-200 text-black w-32"
-            >
-              Zrušit
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {/* Modal na přidání tasku */}
-
-      <input className="modal-state" id="modal-newTask" type="checkbox" />
-      <div className="modal">
-        <label className="modal-overlay" htmlFor="modal-newTask"></label>
-        <div className="modal-content flex flex-col w-screen md:w-9/12 max-w-screen-sm gap-5 bg-white">
-          <div className="form-group">
-            <div className="form-field">
-              <label className="form-label text-lg text-gray-700">Zadejte úkol</label>
-
-              <input
-                placeholder="Vynést odpadky"
-                type="text"
-                className={`input max-w-full bg-white text-black ${formState.inputLabel}`}
-                onChange={(e) => setTask(e.target.value)}
-                value={task}
-              />
-              <label className="form-label">
-                <span className={`form-label-alt ${formState.spanLabel}`}>
-                  {formState.text}
-                </span>
-              </label>
-            </div>
-
-            <div className="form-field pt-3">
-              <div className="form-control mx-auto">
-                <label
+              <div className="flex flex-col gap-4">
+                <Button
                   type="button"
-                  onClick={handleClick}
-                  className="btn btn-primary w-32 "
-                  htmlFor="modal-newTask"
+                  variant="secondary"
+                  className="justify-between w-full"
+                  onClick={() => setShowEditCalendar((prev) => !prev)}
                 >
-                  Vložit
-                </label>
-                <label
-                  htmlFor="modal-newTask"
-                  className="btn btn-block bg-gray-200 text-black w-32"
+                  {editDate
+                    ? format(new Date(editDate), "dd. MM. yyyy", { locale: cs })
+                    : "Datum"}
+
+                  <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+                </Button>
+
+                {showEditCalendar && (
+                  <div className="flex flex-col gap-4 mt-4">
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        type="button"
+                        className="flex-1"
+                        onClick={() => {
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          setEditDate(format(today, "yyyy-MM-dd"));
+                          setShowEditCalendar(false);
+                        }}
+                      >
+                        Dnes
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        type="button"
+                        className="flex-1"
+                        onClick={() => {
+                          const tomorrow = addDays(new Date(), 1);
+                          tomorrow.setHours(0, 0, 0, 0);
+                          setEditDate(format(tomorrow, "yyyy-MM-dd"));
+                          setShowEditCalendar(false);
+                        }}
+                      >
+                        Zítra
+                      </Button>
+                    </div>
+
+                    <div className="flex justify-center">
+                      <Calendar
+                        mode="single"
+                        selected={editDate ? new Date(editDate) : undefined}
+                        onSelect={(date) => {
+                          if (!date) return;
+                          if (date < today) return; // 🔥 zákaz minulosti
+
+                          setEditDate(format(date, "yyyy-MM-dd"));
+                          setShowEditCalendar(false);
+                        }}
+                        disabled={(date) => date < today}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* BUTTONS */}
+              <div className="flex gap-3">
+                <Button
+                  variant="secondary"
+                  className="flex-1 "
+                  onClick={handleEditSave}
+                >
+                  Uložit
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setOpenEditSheet(false)}
                 >
                   Zrušit
-                </label>
+                </Button>
               </div>
-            </div>
-          </div>
-        </div>
+            </form>
+          </SheetContent>
+        </Sheet>
+      )}
+
+      {!isLoadingCollections && !isLoadingTasks && !filter && !taskID && (
+        <p>Vyber kolekci nebo filtr...</p>
+      )}
+
+      {/* Seznam úkolů */}
+      <div className="flex flex-col gap-3 md:gap-4 pt-2 w-full mb-12">
+        <TaskList
+          tasks={tasks}
+          handleChange={handleChange}
+          handleDelete={handleDelete}
+          handleEditBtn={handleEditBtn}
+          editTaskId={editTaskId}
+          editValue={editValue}
+          setEditValue={setEditValue}
+          handleEditSave={handleEditSave}
+          handleEditCancel={handleEditCancel}
+          isMobile={isMobile}
+          isLoading={isLoadingTasks}
+          isLoadingTasks={isLoadingTasks}
+          isLoadingCollections={isLoadingCollections}
+          editDate={editDate}
+          setEditDate={setEditDate}
+        />
       </div>
+
+      {/* Tlačítko "+" na mobilním zobrazení, které ma přidat ukol */}
+      {/*todo Možná vratit modal na přidání ukolu na telefonu? */}
+      {/* <button 
+        onClick={() => setOpenTaskModal(true)}
+        className="fixed bottom-6 right-6 bg-blue-500 text-white rounded-full w-14 h-14 flex items-center justify-center text-3xl shadow-lg hover:bg-blue-600 md:hidden"
+      >
+        +
+      </button> */}
     </div>
   );
 }

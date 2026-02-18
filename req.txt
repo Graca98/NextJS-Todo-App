@@ -1,0 +1,10 @@
+next-themes;
+shadcn@latest init;
+shadcn@latest add button;
+shadcn@latest add toast;
+shadcn@latest add dropdown-menu;
+shadcn@latest add sidebar;
+shadcn@latest add skeleton;
+shadcn@latest add card
+shadcn@latest add input
+shadcn@latest add checkbox
