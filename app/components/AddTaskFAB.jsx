@@ -9,13 +9,13 @@ import {
   SheetTrigger,
   SheetHeader,
   SheetTitle,
-  SheetDescription
+  SheetDescription,
 } from "@/components/ui/sheet";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
@@ -26,18 +26,15 @@ import useIsMobile from "@/lib/hooks/useIsMobile";
 const AddTaskFAB = ({ task, setTask, handleSubmit, taskDate, setTaskDate }) => {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
-  const [dateOpen, setDateOpen] = useState(false)
+  const [dateOpen, setDateOpen] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(
-    taskDate ? new Date(taskDate) : undefined,
-  );
 
   const inputRef = useRef(null);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // 🔥 Autofocus fix (funguje i na mobilu)
+  // Autofocus 
   useEffect(() => {
     if (open) {
       setTimeout(() => {
@@ -51,7 +48,6 @@ const AddTaskFAB = ({ task, setTask, handleSubmit, taskDate, setTaskDate }) => {
 
     setTask("");
     setTaskDate("");
-    setSelectedDate(undefined);
     setShowCalendar(false);
 
     // znovu focus do inputu
@@ -64,9 +60,9 @@ const AddTaskFAB = ({ task, setTask, handleSubmit, taskDate, setTaskDate }) => {
     if (!date) return;
     if (date < today) return;
 
-    setSelectedDate(date);
-    setTaskDate(date.toISOString().split("T")[0]);
+    setTaskDate(format(date, "yyyy-MM-dd"));
     setShowCalendar(false);
+    setDateOpen(false);
   };
 
   const setToday = () => handleDateSelect(today);
@@ -74,107 +70,90 @@ const AddTaskFAB = ({ task, setTask, handleSubmit, taskDate, setTaskDate }) => {
 
   // Desktop zůstává původní
   // Desktop = klasický inline formulář
-if (!isMobile) {
-  return (
-    <div className="w-full mb-6">
-      <div className="flex items-center gap-3 bg-card border border-border p-4 rounded-md">
-        <Checkbox disabled />
+  if (!isMobile) {
+    return (
+      <div className="w-full mb-6">
+        <div className="flex items-center gap-3 bg-card border border-border p-4 rounded-md">
+          <Checkbox disabled />
 
-        <Input
-          placeholder="Přidat úkol"
-          value={task}
-          onChange={(e) => setTask(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          className="flex-1"
-        />
+          <Input
+            placeholder="Přidat úkol"
+            value={task}
+            onChange={(e) => setTask(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+            className="flex-1"
+          />
 
-        <Popover open={dateOpen} onOpenChange={setDateOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="secondary"
-              className="justify-between min-w-[160px]"
-            >
-              {selectedDate
-                ? format(selectedDate, "dd. MM. yyyy", { locale: cs })
-                : "Datum"}
-              <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-
-          <PopoverContent className="w-72 p-3 space-y-3">
-            {/* QUICK ACTIONS */}
-            <div className="flex gap-2">
-             <Button
-  type="button"
-  variant="outline"
-  className="flex-1"
-  onClick={() => {
-    setToday()
-    setDateOpen(false)
-  }}
->
-  Dnes
-</Button>
-
+          <Popover open={dateOpen} onOpenChange={setDateOpen}>
+            <PopoverTrigger asChild>
               <Button
-  type="button"
-  variant="outline"
-  className="flex-1"
-  onClick={() => {
-    setTomorrow()
-    setDateOpen(false)
-  }}
->
-  Zítra
-</Button>
-
-            </div>
-
-            {/* SECONDARY TOGGLE */}
-            {!showCalendar && (
-              <Button
+                type="button"
                 variant="secondary"
-                className="w-full"
-                onClick={() => setShowCalendar(true)}
+                className="justify-between min-w-[160px]"
               >
-                Vybrat datum
+                {taskDate
+                  ? format(new Date(taskDate), "dd. MM. yyyy", { locale: cs })
+                  : "Datum"}
+
+                {taskDate ? (
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setTaskDate("");
+                    }}
+                    className="ml-2 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    ✕
+                  </span>
+                ) : (
+                  <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+                )}
               </Button>
-            )}
+            </PopoverTrigger>
 
-            {/* CALENDAR */}
-            {showCalendar && (
-              <div className="flex justify-center">
-                <Calendar
-  mode="single"
-  selected={selectedDate}
-  onSelect={(date) => {
-    handleDateSelect(date)
-    setShowCalendar(false)
-    setDateOpen(false)
-  }}
-  disabled={(date) => date < today}
-/>
+            <PopoverContent className="w-72 p-3 space-y-3">
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => handleDateSelect(today)}
+                >
+                  Dnes
+                </Button>
 
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => handleDateSelect(addDays(today, 1))}
+                >
+                  Zítra
+                </Button>
               </div>
-            )}
-          </PopoverContent>
-        </Popover>
 
-        <Button
-          variant="secondary"
-          onClick={() => {
-            handleSubmit()
-            setSelectedDate(undefined)
-            setTaskDate("")
-          }}
-        >
-          Přidat
-        </Button>
+              <Calendar
+                mode="single"
+                selected={taskDate ? new Date(taskDate) : undefined}
+                onSelect={handleDateSelect}
+                disabled={(date) => date < today}
+              />
+            </PopoverContent>
+          </Popover>
+
+          <Button
+            variant="secondary"
+            onClick={() => {
+              handleSubmit();
+              setTaskDate("");
+            }}
+          >
+            Přidat
+          </Button>
+        </div>
       </div>
-    </div>
-  )
-}
-
+    );
+  }
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -190,15 +169,13 @@ if (!isMobile) {
       <SheetContent side="bottom" className="rounded-t-2xl pb-10 px-4">
         <SheetHeader>
           <SheetTitle>Přidat úkol</SheetTitle>
-          <SheetDescription>
-            Tlačítko na přidání úkolu
-          </SheetDescription>
+          <SheetDescription>Tlačítko na přidání úkolu</SheetDescription>
         </SheetHeader>
 
         <div className="mt-6 flex flex-col gap-5">
           {/* INPUT */}
           <div className="flex items-center gap-3">
-            <Checkbox disabled />
+            {/* <Checkbox disabled /> */}
             <Input
               ref={inputRef}
               placeholder="Přidat úkol"
@@ -220,9 +197,10 @@ if (!isMobile) {
             className="justify-between"
             onClick={() => setShowCalendar((prev) => !prev)}
           >
-            {selectedDate
-              ? format(selectedDate, "dd. MM. yyyy", { locale: cs })
+            {taskDate
+              ? format(new Date(taskDate), "dd. MM. yyyy", { locale: cs })
               : "Vybrat datum"}
+
             <CalendarIcon className="h-4 w-4 opacity-50" />
           </Button>
 
@@ -252,7 +230,7 @@ if (!isMobile) {
               <div className="flex justify-center">
                 <Calendar
                   mode="single"
-                  selected={selectedDate}
+                  selected={taskDate ? new Date(taskDate) : undefined}
                   onSelect={handleDateSelect}
                   disabled={(date) => date < today}
                 />
