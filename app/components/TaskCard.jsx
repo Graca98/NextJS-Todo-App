@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Calendar } from "@/components/ui/calendar"
-import { PiCalendarDots } from "react-icons/pi"
-import { FiTrash2, FiEdit2, FiCheck, FiX } from "react-icons/fi"
-import { CalendarIcon } from "lucide-react"
-import { format, addDays } from "date-fns"
-import { cs } from "date-fns/locale"
+import { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Calendar } from "@/components/ui/calendar";
+import { PiCalendarDots } from "react-icons/pi";
+import { FiTrash2, FiEdit2, FiCheck, FiX } from "react-icons/fi";
+import { CalendarIcon } from "lucide-react";
+import { format, addDays } from "date-fns";
+import { cs } from "date-fns/locale";
 
 export default function TaskCard({
   title,
@@ -25,24 +25,26 @@ export default function TaskCard({
   handleEditCancel,
   editDate,
   setEditDate,
+  isMobile,
 }) {
-  const [showCalendar, setShowCalendar] = useState(false)
+  const [showCalendar, setShowCalendar] = useState(false);
+  const shouldInlineEdit = !isMobile && isEditing;
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   const formatDate = (dateStr) => {
-    if (!dateStr) return ""
-    return new Date(dateStr).toLocaleDateString("cs-CZ")
-  }
+    if (!dateStr) return "";
+    return new Date(dateStr).toLocaleDateString("cs-CZ");
+  };
 
   const handleSelectDate = (date) => {
-    if (!date) return
-    if (date < today) return
+    if (!date) return;
+    if (date < today) return;
 
-    setEditDate(date.toISOString().split("T")[0])
-    setShowCalendar(false)
-  }
+    setEditDate(format(date, "yyyy-MM-dd"));
+    setShowCalendar(false);
+  };
 
   return (
     <Card
@@ -54,16 +56,15 @@ export default function TaskCard({
         <Checkbox checked={status} onCheckedChange={change} />
 
         <div className="flex flex-col md:flex-row md:items-center flex-1 gap-2">
-
           {/* TITLE */}
-          {isEditing ? (
+          {shouldInlineEdit ? (
             <input
               autoFocus
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") handleEditSave()
-                if (e.key === "Escape") handleEditCancel()
+                if (e.key === "Enter") handleEditSave();
+                if (e.key === "Escape") handleEditCancel();
               }}
               className="bg-card outline-none px-0 py-2 rounded-md text-sm w-full "
             />
@@ -74,14 +75,13 @@ export default function TaskCard({
           )}
 
           {/* DATE */}
-          {isEditing ? (
+          {shouldInlineEdit ? (
             <div className="relative">
-
               <Button
                 type="button"
                 variant="secondary"
                 className="justify-between min-w-[160px]"
-                onClick={() => setShowCalendar(prev => !prev)}
+                onClick={() => setShowCalendar((prev) => !prev)}
               >
                 {editDate
                   ? format(new Date(editDate), "dd. MM. yyyy", { locale: cs })
@@ -90,9 +90,9 @@ export default function TaskCard({
                 {editDate ? (
                   <span
                     onClick={(e) => {
-                      e.stopPropagation()
-                      setEditDate(null)
-                      setShowCalendar(false)
+                      e.stopPropagation();
+                      setEditDate(null);
+                      setShowCalendar(false);
                     }}
                     className="ml-2 text-muted-foreground hover:text-foreground cursor-pointer"
                   >
@@ -105,7 +105,6 @@ export default function TaskCard({
 
               {showCalendar && (
                 <div className="absolute left-0 mt-3 w-72 bg-popover border border-border rounded-md shadow-lg p-3 space-y-3 z-50">
-
                   {/* QUICK SELECT */}
                   <div className="flex gap-2">
                     <Button
@@ -121,9 +120,7 @@ export default function TaskCard({
                       type="button"
                       variant="outline"
                       className="flex-1"
-                      onClick={() =>
-                        handleSelectDate(addDays(today, 1))
-                      }
+                      onClick={() => handleSelectDate(addDays(today, 1))}
                     >
                       Zítra
                     </Button>
@@ -138,10 +135,8 @@ export default function TaskCard({
                       disabled={(date) => date < today}
                     />
                   </div>
-
                 </div>
               )}
-
             </div>
           ) : (
             timeToComplete && (
@@ -154,11 +149,11 @@ export default function TaskCard({
         </div>
 
         {/* ACTIONS */}
-        <div className="flex items-center gap-2">
-          {isEditing ? (
+        <div className="flex items-center gap-1">
+          {shouldInlineEdit ? (
             <>
               <Button size="icon" variant="ghost" onClick={handleEditSave}>
-                <FiCheck className="w-4 h-4" />
+                <FiCheck className="w-4 h-4 text-green-500" />
               </Button>
               <Button size="icon" variant="ghost" onClick={handleEditCancel}>
                 <FiX className="w-4 h-4 text-destructive" />
@@ -167,18 +162,18 @@ export default function TaskCard({
           ) : (
             <>
               <Button
-  size="icon"
-  variant="ghost"
-  onClick={() => {
-    if (isMobile) {
-      editTask()
-    } else {
-      editTask()
-    }
-  }}
->
-  <FiEdit2 className="w-4 h-4" />
-</Button>
+                size="icon"
+                variant="ghost"
+                onClick={() => {
+                  if (isMobile) {
+                    editTask();
+                  } else {
+                    editTask();
+                  }
+                }}
+              >
+                <FiEdit2 className="w-4 h-4" />
+              </Button>
               <Button size="icon" variant="ghost" onClick={deleteTask}>
                 <FiTrash2 className="w-4 h-4 text-destructive" />
               </Button>
@@ -187,5 +182,5 @@ export default function TaskCard({
         </div>
       </div>
     </Card>
-  )
+  );
 }

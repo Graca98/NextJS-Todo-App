@@ -28,16 +28,13 @@ const AddTaskFAB = ({ task, setTask, handleSubmit, taskDate, setTaskDate }) => {
   const [open, setOpen] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
-  // const [selectedDate, setSelectedDate] = useState(
-  //   taskDate ? new Date(taskDate) : undefined,
-  // );
 
   const inputRef = useRef(null);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // 🔥 Autofocus fix (funguje i na mobilu)
+  // Autofocus 
   useEffect(() => {
     if (open) {
       setTimeout(() => {
@@ -63,8 +60,9 @@ const AddTaskFAB = ({ task, setTask, handleSubmit, taskDate, setTaskDate }) => {
     if (!date) return;
     if (date < today) return;
 
-    setTaskDate(date.toISOString().split("T")[0]);
+    setTaskDate(format(date, "yyyy-MM-dd"));
     setShowCalendar(false);
+    setDateOpen(false);
   };
 
   const setToday = () => handleDateSelect(today);
@@ -73,103 +71,89 @@ const AddTaskFAB = ({ task, setTask, handleSubmit, taskDate, setTaskDate }) => {
   // Desktop zůstává původní
   // Desktop = klasický inline formulář
   if (!isMobile) {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+    return (
+      <div className="w-full mb-6">
+        <div className="flex items-center gap-3 bg-card border border-border p-4 rounded-md">
+          <Checkbox disabled />
 
-  const handleDateSelect = (date) => {
-    if (!date) return
-    if (date < today) return
+          <Input
+            placeholder="Přidat úkol"
+            value={task}
+            onChange={(e) => setTask(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+            className="flex-1"
+          />
 
-    setTaskDate(date.toISOString().split("T")[0])
-    setDateOpen(false)
-  }
+          <Popover open={dateOpen} onOpenChange={setDateOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="secondary"
+                className="justify-between min-w-[160px]"
+              >
+                {taskDate
+                  ? format(new Date(taskDate), "dd. MM. yyyy", { locale: cs })
+                  : "Datum"}
 
-  return (
-    <div className="w-full mb-6">
-      <div className="flex items-center gap-3 bg-card border border-border p-4 rounded-md">
-        <Checkbox disabled />
+                {taskDate ? (
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setTaskDate("");
+                    }}
+                    className="ml-2 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    ✕
+                  </span>
+                ) : (
+                  <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+                )}
+              </Button>
+            </PopoverTrigger>
 
-        <Input
-          placeholder="Přidat úkol"
-          value={task}
-          onChange={(e) => setTask(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          className="flex-1"
-        />
-
-        <Popover open={dateOpen} onOpenChange={setDateOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              type="button"
-              variant="secondary"
-              className="justify-between min-w-[160px]"
-            >
-              {taskDate
-                ? format(new Date(taskDate), "dd. MM. yyyy", { locale: cs })
-                : "Datum"}
-
-              {taskDate ? (
-                <span
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setTaskDate("")
-                  }}
-                  className="ml-2 text-muted-foreground hover:text-foreground cursor-pointer"
+            <PopoverContent className="w-72 p-3 space-y-3">
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => handleDateSelect(today)}
                 >
-                  ✕
-                </span>
-              ) : (
-                <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
-              )}
-            </Button>
-          </PopoverTrigger>
+                  Dnes
+                </Button>
 
-          <PopoverContent className="w-72 p-3 space-y-3">
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => handleDateSelect(today)}
-              >
-                Dnes
-              </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => handleDateSelect(addDays(today, 1))}
+                >
+                  Zítra
+                </Button>
+              </div>
 
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() =>
-                  handleDateSelect(addDays(today, 1))
-                }
-              >
-                Zítra
-              </Button>
-            </div>
+              <Calendar
+                mode="single"
+                selected={taskDate ? new Date(taskDate) : undefined}
+                onSelect={handleDateSelect}
+                disabled={(date) => date < today}
+              />
+            </PopoverContent>
+          </Popover>
 
-            <Calendar
-              mode="single"
-              selected={taskDate ? new Date(taskDate) : undefined}
-              onSelect={handleDateSelect}
-              disabled={(date) => date < today}
-            />
-          </PopoverContent>
-        </Popover>
-
-        <Button
-          variant="secondary"
-          onClick={() => {
-            handleSubmit()
-            setTaskDate("")
-          }}
-        >
-          Přidat
-        </Button>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              handleSubmit();
+              setTaskDate("");
+            }}
+          >
+            Přidat
+          </Button>
+        </div>
       </div>
-    </div>
-  )
-}
-
+    );
+  }
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
