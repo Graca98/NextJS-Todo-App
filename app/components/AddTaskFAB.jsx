@@ -175,7 +175,7 @@ const AddTaskFAB = ({ task, setTask, handleSubmit, taskDate, setTaskDate }) => {
         <div className="mt-6 flex flex-col gap-5">
           {/* INPUT */}
           <div className="flex items-center gap-3">
-            <Checkbox disabled />
+            {/* <Checkbox disabled /> */}
             <Input
               ref={inputRef}
               placeholder="Přidat úkol"
